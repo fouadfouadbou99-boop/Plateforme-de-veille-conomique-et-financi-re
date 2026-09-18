@@ -1,97 +1,73 @@
-import streamlit as st
+import feedparser
 import pandas as pd
+import streamlit as st
 
-# Configuration de la page
 st.set_page_config(
     page_title="Actualités",
     page_icon="📰",
     layout="wide"
 )
 
-# Titre
-st.title("📰 Actualités")
+st.title("📰 Veille économique et financière")
 
-# Données temporaires de démonstration
-# À remplacer plus tard par la base SQLite
+RSS_FEEDS = {
+    "OCDE": "https://www.oecd.org/newsroom/rss.xml",
+    "Banque Mondiale": "https://blogs.worldbank.org/en/rss.xml",
+}
 
-df = pd.DataFrame(
-    [
-        {
-            "Source": "Bank Al-Maghrib",
-            "Titre": "Publication du rapport annuel",
-            "Catégorie": "Politique monétaire",
-            "Date": "2026-09-18"
-        },
-        {
-            "Source": "HCP",
-            "Titre": "Nouvelle note de conjoncture",
-            "Catégorie": "Conjoncture",
-            "Date": "2026-09-17"
-        },
-        {
-            "Source": "OCDE",
-            "Titre": "Perspectives économiques mondiales",
-            "Catégorie": "Économie internationale",
-            "Date": "2026-09-15"
-        }
-    ]
-)
+all_news = []
 
-# Filtres
+for source, url in RSS_FEEDS.items():
 
-col1, col2 = st.columns(2)
+    try:
 
-with col1:
-    source = st.selectbox(
-        "Source",
-        ["Toutes"] + sorted(df["Source"].unique().tolist())
+        feed = feedparser.parse(url)
+
+        for entry in feed.entries[:20\]:
+
+            all_news.append(
+                {
+                    "Source": source,
+                    "Titre": entry.get("title", ""),
+                    "Date": entry.get("published", ""),
+                    "Lien": entry.get("link", ""),
+                }
+            )
+
+    except Exception:
+        pass
+
+df = pd.DataFrame(all_news)
+
+if len(df) == 0:
+
+    st.warning(
+        "Aucune actualité récupérée."
     )
 
-with col2:
-    categorie = st.selectbox(
-        "Catégorie",
-        ["Toutes"] + sorted(df["Catégorie"].unique().tolist())
+else:
+
+    st.success(
+        f"{len(df)} actualités récupérées."
     )
 
-# Application des filtres
-
-df_filtre = df.copy()
-
-if source != "Toutes":
-    df_filtre = df_filtre[df_filtre["Source"] == source]
-
-if categorie != "Toutes":
-    df_filtre = df_filtre[df_filtre["Catégorie"] == categorie]
-
-# Affichage
-
-st.subheader("Liste des actualités")
-
-st.dataframe(
-    df_filtre,
-    width="stretch"
-)
-
-# Statistiques
-
-st.divider()
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.metric(
-        "Nombre d'actualités",
-        len(df_filtre)
+    st.dataframe(
+        df,
+        width="stretch"
     )
 
-with col2:
-    st.metric(
-        "Sources",
-        df_filtre["Source"].nunique()
-    )
+    st.subheader("Détails")
 
-with col3:
-    st.metric(
-        "Catégories",
-        df_filtre["Catégorie"].nunique()
-    )
+    for _, row in df.head(20).iterrows():
+
+        st.markdown(
+            f"""
+### {row['Titre']}
+
+**Source :** {row['Source']}
+
+**Date :** {row['Date']}
+
+🔗 {row['Lien']}
+"""
+        )

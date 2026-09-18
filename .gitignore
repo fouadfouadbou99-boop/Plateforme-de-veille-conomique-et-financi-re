@@ -1,0 +1,151 @@
+# Python
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+
+venv/
+env/
+.venv/
+
+# Streamlit
+
+.streamlit/secrets.toml
+
+# Environment Variables
+
+.env
+
+# IDE
+
+.vscode/
+.idea/
+
+# OS
+
+.DS_Store
+Thumbs.db
+
+# Logs
+
+logs/
+*.log
+
+# Database
+
+*.db
+*.sqlite
+*.sqlite3
+
+data/sqlite/*.db
+
+# Build
+
+build/
+dist/
+*.egg-info/
+
+# Pytest
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Mypy
+
+.mypy_cache/
+
+# Jupyter
+
+.ipynb_checkpoints/
+
+# Docker
+
+docker-data/
+
+# ChromaDB
+
+chroma/
+chroma_db/
+vectorstore/
+
+# LangChain
+
+langchain.db
+
+# Exports
+
+data/exports/*.csv
+data/exports/*.xlsx
+data/exports/*.pdf
+
+# Secrets
+
+secrets.json
+credentials.json
+service_account.json
+
+# Temporary files
+
+temp/
+tmp/
+
+# Azure
+
+.azure/
+
+# MacOS
+
+.AppleDouble
+.LSOverride
+
+# Linux
+
+*~
+
+# Backup
+
+*.bak
+*.old
+
+# Reports
+
+reports/
+
+# Generated documents
+
+generated/
+
+# Uploads
+
+uploads/
+
+# Downloads
+
+downloads/
+
+# Cache
+
+.cache/
+
+# Coverage
+
+coverage.xml
+
+# Ruff
+
+.ruff_cache/
+
+# Pylint
+
+.pylint.d/
+
+# Poetry
+
+poetry.lock
+
+# Pipenv
+
+Pipfile.lock

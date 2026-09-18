@@ -1,0 +1,26 @@
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import Integer
+from sqlalchemy import String
+from sqlalchemy import Text
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
+
+class News(Base):
+
+    __tablename__ = "news"
+
+    id = Column(Integer, primary_key=True)
+
+    source = Column(String(100))
+
+    title = Column(Text)
+
+    summary = Column(Text)
+
+    category = Column(String(100))
+
+    publication_date = Column(DateTime)
+
+    url = Column(Text)

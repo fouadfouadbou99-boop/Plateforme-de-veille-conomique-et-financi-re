@@ -72,3 +72,20 @@ Linux
 
 ```bash
 python -m venv venv
+## Licence
+
+Ce projet est distribué sous licence MIT.
+
+Copyright © 2026 Fouad Boukhnif
+
+La licence MIT autorise librement :
+
+- l'utilisation privée et commerciale ;
+- la modification ;
+- la distribution ;
+- la sous-licence ;
+- l'intégration dans des projets propriétaires.
+
+Le logiciel est fourni "en l'état", sans garantie d'aucune sorte.
+
+Voir le fichier LICENSE pour le texte intégral.

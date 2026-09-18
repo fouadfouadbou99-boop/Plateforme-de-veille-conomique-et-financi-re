@@ -1,0 +1,168 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "economic-intelligence-platform"
+version = "1.0.0"
+description = "Plateforme de veille économique, financière et réglementaire basée sur Streamlit."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+
+authors = [
+    { name = "Fouad Boukhnif" }
+]
+
+keywords = [
+    "streamlit",
+    "economic-intelligence",
+    "finance",
+    "veille",
+    "rss",
+    "scraping",
+    "analytics",
+    "dashboard"
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: Streamlit",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering :: Information Analysis"
+]
+
+dependencies = [
+    "streamlit>=1.45",
+    "pandas>=2.2",
+    "numpy>=2.0",
+    "plotly>=6.0",
+    "requests>=2.32",
+    "beautifulsoup4>=4.12",
+    "feedparser>=6.0",
+    "sqlalchemy>=2.0",
+    "python-dotenv>=1.0",
+    "schedule>=1.2",
+    "openpyxl>=3.1",
+    "streamlit-option-menu>=0.4",
+    "sentence-transformers>=3.0",
+    "chromadb>=1.0",
+    "langchain>=0.3",
+    "langchain-community>=0.3",
+    "langchain-openai>=0.3",
+    "pydantic>=2.10"
+]
+
+[project.optional-dependencies]
+
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=6.0",
+    "black>=25.0",
+    "isort>=6.0",
+    "ruff>=0.8",
+    "mypy>=1.15"
+]
+
+azure = [
+    "azure-identity",
+    "azure-storage-blob",
+    "azure-search-documents",
+    "azure-ai-projects"
+]
+
+postgres = [
+    "psycopg2-binary>=2.9"
+]
+
+[project.urls]
+
+Homepage = "https://github.com/fboukhnif/economic-intelligence-platform"
+Documentation = "https://github.com/fboukhnif/economic-intelligence-platform/wiki"
+Repository = "https://github.com/fboukhnif/economic-intelligence-platform"
+Issues = "https://github.com/fboukhnif/economic-intelligence-platform/issues"
+
+[tool.setuptools]
+
+include-package-data = true
+
+[tool.setuptools.packages.find]
+
+where = ["."]
+include = [
+    "connectors*",
+    "services*",
+    "repository*",
+    "database*",
+    "utils*",
+    "config*"
+]
+
+[tool.black]
+
+line-length = 88
+target-version = ["py311"]
+
+[tool.isort]
+
+profile = "black"
+line_length = 88
+
+[tool.ruff]
+
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+
+select = [
+    "E",
+    "F",
+    "I",
+    "B",
+    "UP"
+]
+
+ignore = [
+    "E501"
+]
+
+[tool.pytest.ini_options]
+
+testpaths = [
+    "tests"
+]
+
+python_files = [
+    "test_*.py"
+]
+
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+
+source = [
+    "connectors",
+    "services",
+    "repository",
+    "database"
+]
+
+[tool.coverage.report]
+
+show_missing = true
+skip_covered = true
+
+[tool.mypy]
+
+python_version = "3.11"
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true

@@ -1,2 +1,74 @@
-# Plateforme-de-veille-conomique-et-financi-re
-Data Economique et Financières des Officiells
+# Economic Intelligence Platform
+
+Plateforme de veille économique, financière et réglementaire développée avec Python et Streamlit.
+
+## Objectifs
+
+Collecter automatiquement les informations provenant de :
+
+### Institutions marocaines
+
+- Bank Al-Maghrib (BAM)
+- Ministère de l'Économie et des Finances (MEF)
+- HCP
+- Bourse de Casablanca
+- AMMC
+- MAP
+
+### Institutions internationales
+
+- FMI
+- Banque Mondiale
+- OCDE
+- BAD
+- BCE
+- FED
+
+## Fonctionnalités
+
+- Collecte RSS
+- Collecte API
+- Scraping de sites publics
+- Centralisation des actualités
+- Classification automatique
+- Alertes intelligentes
+- Tableau de bord Streamlit
+- Historisation en base de données
+- Génération de synthèses IA
+- Recherche documentaire RAG
+
+---
+
+# Architecture
+
+```text
+economic-intelligence-platform/
+├── app.py
+├── config/
+├── connectors/
+├── services/
+├── repository/
+├── database/
+├── pages/
+├── tests/
+└── data/
+```
+
+---
+
+# Installation
+
+## Cloner le dépôt
+
+```bash
+git clone https://github.com/organisation/economic-intelligence-platform.git
+
+cd economic-intelligence-platform
+```
+
+## Créer un environnement virtuel
+
+Linux
+
+```bash
+python -m venv venv

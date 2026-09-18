@@ -1,0 +1,17 @@
+streamlit
+pandas
+numpy
+plotly
+sqlalchemy
+requests
+beautifulsoup4
+feedparser
+schedule
+python-dotenv
+openpyxl
+streamlit-option-menu
+sentence-transformers
+chromadb
+langchain
+langchain-community
+langchain-openai

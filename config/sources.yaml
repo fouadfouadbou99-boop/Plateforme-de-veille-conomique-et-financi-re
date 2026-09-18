@@ -1,0 +1,29 @@
+rss:
+
+  bam:
+    enabled: true
+
+  mef:
+    enabled: true
+
+  hcp:
+    enabled: true
+
+  ocde:
+    enabled: true
+
+api:
+
+  world_bank:
+    enabled: true
+
+  imf:
+    enabled: true
+
+  oecd:
+    enabled: true
+
+web_scraping:
+
+  casablanca_stock_exchange:
+    enabled: true

@@ -1,0 +1,20 @@
+class AlertService:
+
+    def generate_alert(self, news):
+
+        keywords = [
+            "inflation",
+            "taux directeur",
+            "récession",
+            "crise"
+        ]
+
+        text = news["title"].lower()
+
+        for keyword in keywords:
+
+            if keyword in text:
+
+                return True
+
+        return False

@@ -23,7 +23,7 @@ for source, url in RSS_FEEDS.items():
 
         feed = feedparser.parse(url)
 
-        for entry in feed.entries[:20\]:
+        for entry in feed.entries[:20]:
 
             all_news.append(
                 {

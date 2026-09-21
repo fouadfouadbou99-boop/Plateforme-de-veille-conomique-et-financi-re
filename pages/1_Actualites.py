@@ -11,8 +11,8 @@ st.set_page_config(
 st.title("📰 Veille économique et financière")
 
 RSS_FEEDS = {
-    "OCDE": "https://www.oecd.org/newsroom/rss.xml",
-    "Banque Mondiale": "https://blogs.worldbank.org/en/rss.xml",
+    "FMI": "https://www.imf.org/en/News/RSS",
+    "Banque Mondiale": "https://blogs.worldbank.org/en/feed",
 }
 
 all_news = []
@@ -35,6 +35,7 @@ for source, url in RSS_FEEDS.items():
             )
 
     except Exception as e:
+
         st.warning(f"Erreur pour {source}: {e}")
 
 df = pd.DataFrame(all_news)
@@ -45,16 +46,42 @@ if df.empty:
 
 else:
 
-    st.success(f"{len(df)} actualités récupérées.")
+    source_filtre = st.sidebar.multiselect(
+        "Sources",
+        sorted(df["Source"].unique()),
+        default=sorted(df["Source"].unique())
+    )
+
+    mot_cle = st.sidebar.text_input(
+        "Recherche"
+    )
+
+    df_filtre = df[
+        df["Source"].isin(source_filtre)
+    ]
+
+    if mot_cle:
+
+        df_filtre = df_filtre[
+            df_filtre["Titre"].str.contains(
+                mot_cle,
+                case=False,
+                na=False
+            )
+        ]
+
+    st.success(
+        f"{len(df_filtre)} actualités trouvées."
+    )
 
     st.dataframe(
-        df,
+        df_filtre,
         use_container_width=True
     )
 
-    st.subheader("Détails")
+    st.subheader("Détail des actualités")
 
-    for _, row in df.head(20).iterrows():
+    for _, row in df_filtre.head(20).iterrows():
 
         st.markdown(
             f"""
@@ -64,6 +91,6 @@ else:
 
 **Date :** {row['Date']}
 
-🔗 {row['Lien']}
+{row['Lien']}
 """
         )

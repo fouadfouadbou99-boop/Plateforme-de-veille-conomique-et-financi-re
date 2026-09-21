@@ -23,7 +23,7 @@ for source, url in RSS_FEEDS.items():
 
         feed = feedparser.parse(url)
 
-        for entry in feed.entries[:20]:
+        for entry in feed.entries[:20\]:
 
             all_news.append(
                 {
@@ -36,28 +36,34 @@ for source, url in RSS_FEEDS.items():
 
     except Exception as e:
 
-        st.warning(f"Erreur pour {source}: {e}")
+        st.warning(
+            f"Erreur lors de la récupération des données depuis {source} : {e}"
+        )
 
 df = pd.DataFrame(all_news)
 
 if df.empty:
 
-    st.warning("Aucune actualité récupérée.")
+    st.warning(
+        "Aucune actualité récupérée."
+    )
 
 else:
 
-    source_filtre = st.sidebar.multiselect(
+    st.sidebar.header("Filtres")
+
+    sources_selectionnees = st.sidebar.multiselect(
         "Sources",
-        sorted(df["Source"].unique()),
+        options=sorted(df["Source"].unique()),
         default=sorted(df["Source"].unique())
     )
 
     mot_cle = st.sidebar.text_input(
-        "Recherche"
+        "Recherche par mot-clé"
     )
 
     df_filtre = df[
-        df["Source"].isin(source_filtre)
+        df["Source"].isin(sources_selectionnees)
     ]
 
     if mot_cle:
@@ -71,7 +77,7 @@ else:
         ]
 
     st.success(
-        f"{len(df_filtre)} actualités trouvées."
+        f"{len(df_filtre)} actualités trouvées"
     )
 
     st.dataframe(
@@ -83,14 +89,20 @@ else:
 
     for _, row in df_filtre.head(20).iterrows():
 
-        st.markdown(
-            f"""
-### {row['Titre']}
+        st.markdown(f"### {row['Titre']}")
 
-**Source :** {row['Source']}
-
-**Date :** {row['Date']}
-
-{row['Lien']}
-"""
+        st.write(
+            f"**Source :** {row['Source']}"
         )
+
+        st.write(
+            f"**Date :** {row['Date']}"
+        )
+
+        if row["Lien"\]:
+
+            st.markdown(
+                f"{row['Lien']}"
+            )
+
+        st.divider()

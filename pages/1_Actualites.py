@@ -34,26 +34,22 @@ for source, url in RSS_FEEDS.items():
                 }
             )
 
-    except Exception:
-        pass
+    except Exception as e:
+        st.warning(f"Erreur pour {source}: {e}")
 
 df = pd.DataFrame(all_news)
 
-if len(df) == 0:
+if df.empty:
 
-    st.warning(
-        "Aucune actualité récupérée."
-    )
+    st.warning("Aucune actualité récupérée.")
 
 else:
 
-    st.success(
-        f"{len(df)} actualités récupérées."
-    )
+    st.success(f"{len(df)} actualités récupérées.")
 
     st.dataframe(
         df,
-        width="stretch"
+        use_container_width=True
     )
 
     st.subheader("Détails")

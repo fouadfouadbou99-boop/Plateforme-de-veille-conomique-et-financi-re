@@ -33,3 +33,7 @@ pydantic
 pytest
 
 gunicorn
+streamlit
+pandas
+requests
+beautifulsoup4

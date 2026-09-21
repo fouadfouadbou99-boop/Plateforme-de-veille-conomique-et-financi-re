@@ -69,3 +69,20 @@ for _, row in df_filtre.iterrows():
     st.write(f"Date : {row['Date']}")
     st.write(row["Lien"])
     st.divider()
+for _, row in df.iterrows():
+
+    st.markdown(f"### {row['Titre']}")
+
+    if row["PDF"]:
+
+        st.link_button(
+            "📄 Télécharger PDF",
+            row["PDF"]
+        )
+
+    else:
+
+        st.link_button(
+            "🔗 Ouvrir",
+            row["Lien"]
+        )

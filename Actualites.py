@@ -6,9 +6,9 @@ st.title("📰 Actualités")
 df = pd.DataFrame(
     columns=[
         "source",
-        "title",
-        "category",
-        "publication_date",
+        "titre",
+        "catégorie",
+        "date_de_publication",
     ]
 )
 

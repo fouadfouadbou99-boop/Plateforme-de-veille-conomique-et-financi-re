@@ -1,5 +1,7 @@
-import streamlit as st
 import pandas as pd
+import streamlit as st
+
+from connectors.aggregator import get_all_documents
 
 st.set_page_config(
     page_title="Actualités",
@@ -9,80 +11,125 @@ st.set_page_config(
 
 st.title("📰 Veille économique et financière")
 
-df = pd.DataFrame(
-    [
-        {
-            "Source": "BAM",
-            "Titre": "Communiqué de politique monétaire",
-            "Date": "2026-09-21",
-            "Lien": "https://www.bkam.ma",
-        },
-        {
-            "Source": "HCP",
-            "Titre": "Publication de l'indice des prix",
-            "Date": "2026-09-20",
-            "Lien": "https://www.hcp.ma",
-        },
-        {
-            "Source": "FMI",
-            "Titre": "Perspectives économiques mondiales",
-            "Date": "2026-09-19",
-            "Lien": "https://www.imf.org",
-        },
-    ]
-)
+# Chargement des données
+try:
+    all_news = get_all_documents()
+except Exception as e:
+    st.error(f"Erreur lors du chargement des données : {e}")
+    all_news = []
 
+df = pd.DataFrame(all_news)
+
+# Colonnes obligatoires
+required_columns = [
+    "Source",
+    "Titre",
+    "Date",
+    "Lien",
+    "PDF",
+]
+
+for col in required_columns:
+    if col not in df.columns:
+        df[col] = ""
+
+if df.empty:
+    st.warning("Aucune donnée récupérée.")
+    st.stop()
+
+# KPI
 col1, col2, col3 = st.columns(3)
 
-col1.metric("Actualités", len(df))
-col2.metric("Sources", df["Source"].nunique())
-col3.metric("Dernière date", df["Date"].max())
+col1.metric(
+    "Actualités",
+    len(df)
+)
+
+col2.metric(
+    "Sources",
+    df["Source"].nunique()
+)
+
+col3.metric(
+    "Documents PDF",
+    len(
+        df[
+            df["PDF"].astype(str).str.strip() != ""
+        ]
+    )
+)
 
 st.divider()
 
-sources = st.multiselect(
+# Filtres
+sources = sorted(df["Source"].dropna().unique())
+
+selected_sources = st.multiselect(
     "Filtrer par source",
-    sorted(df["Source"].unique()),
-    default=sorted(df["Source"].unique()),
+    options=sources,
+    default=sources,
 )
 
-recherche = st.text_input("Recherche")
+search = st.text_input(
+    "Recherche"
+)
 
-df_filtre = df[df["Source"].isin(sources)]
+df_filtered = df[
+    df["Source"].isin(selected_sources)
+]
 
-if recherche:
-    df_filtre = df_filtre[
-        df_filtre["Titre"].str.contains(
-            recherche,
+if search:
+    df_filtered = df_filtered[
+        df_filtered["Titre"].str.contains(
+            search,
             case=False,
             na=False,
         )
     ]
 
-st.dataframe(df_filtre, use_container_width=True)
+# Tableau
+st.dataframe(
+    df_filtered[
+        [
+            "Source",
+            "Titre",
+            "Date",
+        ]
+    ],
+    width="stretch",
+)
+
+st.divider()
 
 st.subheader("Détail des actualités")
 
-for _, row in df_filtre.iterrows():
-    st.markdown(f"### {row['Titre']}")
-    st.write(f"Source : {row['Source']}")
-    st.write(f"Date : {row['Date']}")
-    st.write(row["Lien"])
-    st.divider()
-for _, row in df.iterrows():
+for _, row in df_filtered.iterrows():
 
-    st.markdown(f"### {row['Titre']}")
+    titre = str(row.get("Titre", ""))
+    source = str(row.get("Source", ""))
+    date = str(row.get("Date", ""))
+    lien = str(row.get("Lien", "")).strip()
+    pdf = str(row.get("PDF", "")).strip()
 
-    if row["PDF"]:
+    st.markdown(f"### {titre}")
 
-        st.link_button(
-            "📄 Télécharger PDF",
-            row["PDF"]
-        )
+    if source:
+        st.write(f"**Source :** {source}")
 
-    else:
+    if date:
+        st.write(f"**Date :** {date}")
 
-        st.link_button(
-            "🔗 Ouvrir",
-            row["Lien"]
-        )
+    col1, col2 = st.columns(2)
+
+    if lien:
+        with col1:
+            st.link_button(
+                "🔗 Ouvrir la publication",
+                lien,
+            )
+
+    if pdf:
+        with col2:
+            st.link_button(
+                "📄 Télécharger PDF",
+          

@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
 
-URL = "https://www.bkam.ma/Communiques"
+URL = "https://www.bkam.ma/fr"
 
 
 def get_bam_documents():

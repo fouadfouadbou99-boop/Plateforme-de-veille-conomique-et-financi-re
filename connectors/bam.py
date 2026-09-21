@@ -1,19 +1,35 @@
+import re
 import requests
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+
+BASE_URL = "https://www.bkam.ma"
+URL = "https://www.bkam.ma/Communiques"
 
 
-def get_bam_news():
+def extract_date(text):
+    pattern = r"\d{2}-\d{2}-\d{4}"
+    match = re.search(pattern, text)
+    return match.group(0) if match else ""
 
-    news = []
+
+def get_bam_news(limit=30):
+
+    results = []
+
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
 
     try:
 
-        url = "https://www.bkam.ma"
-
         response = requests.get(
-            url,
-            timeout=20
+            URL,
+            headers=headers,
+            timeout=30
         )
+
+        response.raise_for_status()
 
         soup = BeautifulSoup(
             response.text,
@@ -22,23 +38,76 @@ def get_bam_news():
 
         links = soup.find_all("a")
 
-        for link in links[:20\]:
+        seen = set()
 
-            titre = link.get_text(strip=True)
+        for link in links:
 
-            if len(titre) > 10:
+            title = link.get_text(strip=True)
 
-                news.append(
-                    {
-                        "Source": "BAM",
-                        "Titre": titre,
-                        "Date": "",
-                        "Lien": link.get("href", "")
-                    }
-                )
+            href = link.get("href")
+
+            if not title:
+                continue
+
+            if len(title) < 15:
+                continue
+
+            if title in seen:
+                continue
+
+            seen.add(title)
+
+            detail_url = urljoin(BASE_URL, href)
+
+            pdf_url = find_pdf(detail_url)
+
+            results.append(
+                {
+                    "Source": "BAM",
+                    "Titre": title,
+                    "Date": extract_date(title),
+                    "Lien": detail_url,
+                    "PDF": pdf_url,
+                }
+            )
+
+            if len(results) >= limit:
+                break
 
     except Exception as e:
 
-        print(e)
+        print(f"BAM ERROR : {e}")
 
-    return news
+    return results
+
+
+def find_pdf(page_url):
+
+    try:
+
+        response = requests.get(
+            page_url,
+            timeout=30
+        )
+
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser"
+        )
+
+        for link in soup.find_all("a"):
+
+            href = link.get("href")
+
+            if href and ".pdf" in href.lower():
+
+                return urljoin(
+                    BASE_URL,
+                    href
+                )
+
+    except Exception:
+
+        return ""
+
+    return ""

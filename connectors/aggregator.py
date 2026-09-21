@@ -1,31 +1,35 @@
-from connectors.bam import get_bam_documents
-from connectors.imf import get_imf_documents
-from connectors.hcp import get_hcp_documents
-from connectors.mef import get_mef_documents
+try:
+    from connectors.bam import get_bam_documents
+except Exception:
+    def get_bam_documents():
+        return []
+
+try:
+    from connectors.hcp import get_hcp_documents
+except Exception:
+    def get_hcp_documents():
+        return []
+
+try:
+    from connectors.mef import get_mef_documents
+except Exception:
+    def get_mef_documents():
+        return []
+
+try:
+    from connectors.imf import get_imf_documents
+except Exception:
+    def get_imf_documents():
+        return []
 
 
 def get_all_documents():
 
-    documents = []
+    docs = []
 
-    try:
-        documents.extend(get_bam_documents())
-    except Exception as e:
-        print(e)
+    docs.extend(get_bam_documents())
+    docs.extend(get_hcp_documents())
+    docs.extend(get_mef_documents())
+    docs.extend(get_imf_documents())
 
-    try:
-        documents.extend(get_hcp_documents())
-    except Exception as e:
-        print(e)
-
-    try:
-        documents.extend(get_mef_documents())
-    except Exception as e:
-        print(e)
-
-    try:
-        documents.extend(get_imf_documents())
-    except Exception as e:
-        print(e)
-
-    return documents
+    return docs

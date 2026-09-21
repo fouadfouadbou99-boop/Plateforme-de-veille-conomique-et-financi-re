@@ -18,10 +18,13 @@ RSS_FEEDS = {
 all_news = []
 
 for source, url in RSS_FEEDS.items():
+
     try:
+
         feed = feedparser.parse(url)
 
         for entry in feed.entries[:20\]:
+
             all_news.append(
                 {
                     "Source": source,
@@ -37,9 +40,11 @@ for source, url in RSS_FEEDS.items():
 df = pd.DataFrame(all_news)
 
 if df.empty:
+
     st.warning("Aucune actualité récupérée.")
 
 else:
+
     st.success(f"{len(df)} actualités récupérées.")
 
     st.dataframe(
@@ -59,6 +64,6 @@ else:
 
 **Date :** {row['Date']}
 
-🔗 {row['ien']}
+🔗 {row['Lien']}
 """
         )

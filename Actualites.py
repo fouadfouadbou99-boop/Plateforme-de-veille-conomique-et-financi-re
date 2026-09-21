@@ -14,5 +14,5 @@ df = pd.DataFrame(
 
 st.dataframe(
     df,
-    width="stretch"
+    use_container_width=True
 )

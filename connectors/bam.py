@@ -1,38 +1,55 @@
-# connectors/bam.py
-
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+
 
 URL = "https://www.bkam.ma/Communiques"
 
 
 def get_bam_documents():
 
-    docs = []
+    documents = []
 
-    response = requests.get(URL, timeout=30)
+    try:
 
-    soup = BeautifulSoup(
-        response.text,
-        "html.parser"
-    )
-
-    for link in soup.find_all("a"):
-
-        if "Lire la suite" not in link.get_text():
-            continue
-
-        href = link.get("href")
-
-        docs.append(
-            {
-                "Source": "BAM",
-                "Titre": href.split("/")[-1],
-                "Date": "",
-                "Lien": urljoin(URL, href),
-                "PDF": ""
+        response = requests.get(
+            URL,
+            timeout=30,
+            headers={
+                "User-Agent": "Mozilla/5.0"
             }
         )
 
-    return docs[:20]
+        response.raise_for_status()
+
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser"
+        )
+
+        for link in soup.find_all("a", href=True):
+
+            titre = link.get_text(strip=True)
+
+            if len(titre) < 10:
+                continue
+
+            href = link["href"]
+
+            documents.append(
+                {
+                    "Source": "BAM",
+                    "Titre": titre,
+                    "Date": "",
+                    "Lien": urljoin(URL, href),
+                    "PDF": ""
+                }
+            )
+
+        return documents[:20]
+
+    except Exception as e:
+
+        print(f"BAM ERROR : {e}")
+
+        return []

@@ -1,44 +1,37 @@
+# connectors/imf.py
+
 import requests
 from bs4 import BeautifulSoup
 
+URL = "https://www.imf.org/en/news"
 
-def get_imf_news():
 
-    news = []
+def get_imf_documents():
 
-    try:
+    docs = []
 
-        url = "https://www.imf.org/en/News"
+    response = requests.get(URL, timeout=30)
 
-        response = requests.get(
-            url,
-            timeout=20
+    soup = BeautifulSoup(
+        response.text,
+        "html.parser"
+    )
+
+    for link in soup.find_all("a"):
+
+        title = link.get_text(strip=True)
+
+        if len(title) < 20:
+            continue
+
+        docs.append(
+            {
+                "Source": "FMI",
+                "Titre": title,
+                "Date": "",
+                "Lien": link.get("href"),
+                "PDF": ""
+            }
         )
 
-        soup = BeautifulSoup(
-            response.text,
-            "html.parser"
-        )
-
-        articles = soup.find_all("a")[:20]
-
-        for article in articles:
-
-            titre = article.get_text(strip=True)
-
-            if titre:
-
-                news.append(
-                    {
-                        "Source": "FMI",
-                        "Titre": titre,
-                        "Date": "",
-                        "Lien": article.get("href", "")
-                    }
-                )
-
-    except Exception as e:
-
-        print(e)
-
-    return news
+    return docs[:20]

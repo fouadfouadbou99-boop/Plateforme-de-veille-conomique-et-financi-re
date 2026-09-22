@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 
 URL = "https://www.banquemondiale.org/ext/fr/home"
 
+
 def get_worldbank_documents():
 
     docs = []
@@ -44,6 +45,6 @@ def get_worldbank_documents():
 
     except Exception as e:
 
-        print(e)
+        print(f"WORLDBANK ERROR: {e}")
 
         return []

@@ -26,16 +26,10 @@ def get_hcp_documents():
             "html.parser"
         )
 
-        for link in soup.find_all(
-            "a",
-            href=True
-        ):
+        for link in soup.find_all("a", href=True):
 
             href = link["href"]
-
-            titre = link.get_text(
-                strip=True
-            )
+            titre = link.get_text(strip=True)
 
             if "_a" not in href:
                 continue
@@ -48,10 +42,7 @@ def get_hcp_documents():
                     "Source": "HCP",
                     "Titre": titre,
                     "Date": "",
-                    "Lien": urljoin(
-                        URL,
-                        href
-                    ),
+                    "Lien": urljoin(URL, href),
                     "PDF": ""
                 }
             )
@@ -63,4 +54,3 @@ def get_hcp_documents():
         print(f"HCP ERROR: {e}")
 
         return []
-``

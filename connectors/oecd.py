@@ -1,8 +1,6 @@
-import requests
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+import feedparser
 
-URL = "https://www.oecd.org/newsroom/"
+RSS_URL = "https://www.oecd.org/newsroom/rss/"
 
 
 def get_oecd_documents():
@@ -11,41 +9,30 @@ def get_oecd_documents():
 
     try:
 
-        response = requests.get(
-            URL,
-            timeout=60,
-            headers={
-                "User-Agent": "Mozilla/5.0"
-            }
-        )
+        feed = feedparser.parse(RSS_URL)
 
-        soup = BeautifulSoup(
-            response.text,
-            "html.parser"
-        )
-
-        for link in soup.find_all("a", href=True):
-
-            titre = link.get_text(strip=True)
-
-            if len(titre) < 20:
-                continue
+        for entry in feed.entries:
 
             docs.append(
                 {
                     "Source": "OCDE",
-                    "Titre": titre,
-                    "Date": "",
-                    "Lien": urljoin(URL, link["href"]),
+                    "Titre": entry.get("title", ""),
+                    "Date": entry.get("published", ""),
+                    "Lien": entry.get("link", ""),
                     "PDF": ""
                 }
             )
 
-        return docs[:50]
+        print(
+            f"OCDE: {len(docs)} documents"
+        )
+
+        return docs
 
     except Exception as e:
 
-        print(f"OECD ERROR: {e}")
+        print(
+            f"OCDE ERROR: {e}"
+        )
 
         return []
-``

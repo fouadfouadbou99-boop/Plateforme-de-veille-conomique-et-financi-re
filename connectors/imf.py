@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 
 URL = "https://www.imf.org/en/news"
 
+
 def get_imf_documents():
 
     docs = []
@@ -44,6 +45,6 @@ def get_imf_documents():
 
     except Exception as e:
 
-        print(e)
+        print(f"IMF ERROR: {e}")
 
         return []

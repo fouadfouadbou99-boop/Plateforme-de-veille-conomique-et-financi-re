@@ -11,20 +11,20 @@ st.set_page_config(
 
 st.title("📰 Veille économique et financière")
 
+# Chargement des données
 try:
-
     data = get_all_documents()
 
 except Exception as e:
-
     st.error(
         f"Erreur chargement données : {e}"
     )
-
     data = []
 
+# DataFrame
 df = pd.DataFrame(data)
 
+# Colonnes obligatoires
 required_columns = [
     "Source",
     "Titre",
@@ -38,6 +38,7 @@ for col in required_columns:
     if col not in df.columns:
         df[col] = ""
 
+# Aucune donnée
 if df.empty:
 
     st.warning(
@@ -46,6 +47,7 @@ if df.empty:
 
     st.stop()
 
+# KPI
 col1, col2, col3 = st.columns(3)
 
 col1.metric(
@@ -69,6 +71,7 @@ col3.metric(
 
 st.divider()
 
+# Filtres
 sources = sorted(
     df["Source"].fillna("").unique()
 )
@@ -90,13 +93,16 @@ df_filtre = df[
 if recherche:
 
     df_filtre = df_filtre[
-        df_filtre["Titre"].astype(str).str.contains(
+        df_filtre["Titre"]
+        .astype(str)
+        .str.contains(
             recherche,
             case=False,
             na=False
         )
     ]
 
+# Tableau principal
 st.dataframe(
     df_filtre[
         [
@@ -113,7 +119,7 @@ st.dataframe(
 st.divider()
 
 st.subheader(
-    "Détail des publications"
+    "📄 Détail des publications"
 )
 
 for _, row in df_filtre.iterrows():
@@ -143,13 +149,11 @@ for _, row in df_filtre.iterrows():
     )
 
     if source:
-
         st.write(
             f"**Source :** {source}"
         )
 
     if date:
-
         st.write(
             f"**Date :** {date}"
         )
@@ -170,8 +174,27 @@ for _, row in df_filtre.iterrows():
         with col_b:
 
             st.link_button(
-                "📄 Télécharger PDF",
+                "📄 Télécharger le PDF",
                 pdf
             )
 
     st.divider()
+
+# Export Excel
+try:
+
+    export_df = df_filtre.copy()
+
+    excel_data = export_df.to_csv(
+        index=False
+    ).encode("utf-8")
+
+    st.download_button(
+        label="⬇️ Export CSV",
+        data=excel_data,
+        file_name="veille_economique.csv",
+        mime="text/csv"
+    )
+
+except Exception:
+    pass

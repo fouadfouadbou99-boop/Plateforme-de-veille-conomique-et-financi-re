@@ -1,0 +1,50 @@
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+
+URL = "https://www.banquemondiale.org/ext/fr/home"
+
+
+def get_worldbank_documents():
+
+    docs = []
+
+    try:
+
+        response = requests.get(
+            URL,
+            timeout=60,
+            headers={
+                "User-Agent": "Mozilla/5.0"
+            }
+        )
+
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser"
+        )
+
+        for link in soup.find_all("a", href=True):
+
+            title = link.get_text(strip=True)
+
+            if len(title) < 20:
+                continue
+
+            docs.append(
+                {
+                    "Source": "Banque Mondiale",
+                    "Titre": title,
+                    "Date": "",
+                    "Lien": urljoin(URL, link["href"]),
+                    "PDF": ""
+                }
+            )
+
+        return docs[:50]
+
+    except Exception as e:
+
+        print(f"WORLDBANK ERROR: {e}")
+
+        return []

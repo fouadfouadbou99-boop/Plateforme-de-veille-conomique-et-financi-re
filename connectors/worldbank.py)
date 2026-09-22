@@ -4,7 +4,6 @@ from urllib.parse import urljoin
 
 URL = "https://www.banquemondiale.org/ext/fr/home"
 
-
 def get_worldbank_documents():
 
     docs = []
@@ -26,15 +25,15 @@ def get_worldbank_documents():
 
         for link in soup.find_all("a", href=True):
 
-            title = link.get_text(strip=True)
+            titre = link.get_text(strip=True)
 
-            if len(title) < 20:
+            if len(titre) < 20:
                 continue
 
             docs.append(
                 {
                     "Source": "Banque Mondiale",
-                    "Titre": title,
+                    "Titre": titre,
                     "Date": "",
                     "Lien": urljoin(URL, link["href"]),
                     "PDF": ""
@@ -45,6 +44,6 @@ def get_worldbank_documents():
 
     except Exception as e:
 
-        print(f"WORLDBANK ERROR: {e}")
+        print(e)
 
         return []

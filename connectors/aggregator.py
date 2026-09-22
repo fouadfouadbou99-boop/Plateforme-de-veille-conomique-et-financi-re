@@ -1,9 +1,6 @@
 from connectors.hcp import get_hcp_documents
 from connectors.mef import get_mef_documents
 from connectors.imf import get_imf_documents
-from connectors.worldbank import get_worldbank_documents
-from connectors.oecd import get_oecd_documents
-from connectors.bam import get_bam_documents
 
 
 def normalize(doc):
@@ -17,26 +14,19 @@ def normalize(doc):
     }
 
 
-def load_source(name, loader):
+def load_source(name, func):
 
     try:
 
-        docs = loader()
+        data = func()
 
-        print(
-            f"{name}: {len(docs)} documents"
-        )
+        print(f"{name}: {len(data)} documents")
 
-        return [
-            normalize(x)
-            for x in docs
-        ]
+        return [normalize(x) for x in data]
 
     except Exception as e:
 
-        print(
-            f"{name} ERROR: {e}"
-        )
+        print(f"{name} ERROR: {e}")
 
         return []
 
@@ -64,31 +54,6 @@ def get_all_documents():
             "IMF",
             get_imf_documents
         )
-    )
-
-    docs.extend(
-        load_source(
-            "WORLDBANK",
-            get_worldbank_documents
-        )
-    )
-
-    docs.extend(
-        load_source(
-            "OCDE",
-            get_oecd_documents
-        )
-    )
-
-    docs.extend(
-        load_source(
-            "BAM",
-            get_bam_documents
-        )
-    )
-
-    print(
-        f"TOTAL: {len(docs)} documents"
     )
 
     return docs

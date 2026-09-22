@@ -9,16 +9,27 @@ def get_oecd_documents():
 
     try:
 
-        feed = feedparser.parse(RSS_URL)
+        feed = feedparser.parse(
+            RSS_URL
+        )
 
         for entry in feed.entries:
 
             docs.append(
                 {
                     "Source": "OCDE",
-                    "Titre": entry.get("title", ""),
-                    "Date": entry.get("published", ""),
-                    "Lien": entry.get("link", ""),
+                    "Titre": entry.get(
+                        "title",
+                        ""
+                    ),
+                    "Date": entry.get(
+                        "published",
+                        ""
+                    ),
+                    "Lien": entry.get(
+                        "link",
+                        ""
+                    ),
                     "PDF": ""
                 }
             )

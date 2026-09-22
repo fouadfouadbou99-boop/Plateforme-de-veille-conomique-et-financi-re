@@ -18,25 +18,12 @@ def get_oecd_documents():
             docs.append(
                 {
                     "Source": "OCDE",
-                    "Titre": entry.get(
-                        "title",
-                        ""
-                    ),
-                    "Date": entry.get(
-                        "published",
-                        ""
-                    ),
-                    "Lien": entry.get(
-                        "link",
-                        ""
-                    ),
+                    "Titre": entry.get("title", ""),
+                    "Date": entry.get("published", ""),
+                    "Lien": entry.get("link", ""),
                     "PDF": ""
                 }
             )
-
-        print(
-            f"OCDE: {len(docs)} documents"
-        )
 
         return docs
 

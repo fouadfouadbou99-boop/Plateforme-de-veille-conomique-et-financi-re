@@ -61,4 +61,3 @@ def get_mef_documents():
         print(f"MEF ERROR: {e}")
 
         return []
-``

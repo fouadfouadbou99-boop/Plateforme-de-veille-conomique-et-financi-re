@@ -1,7 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 
 URL = "https://www.finances.gov.ma/fr/Pages/publications.aspx"
+
 
 def get_mef_documents():
 
@@ -26,7 +28,15 @@ def get_mef_documents():
 
             titre = link.get_text(strip=True)
 
-            if not titre:
+            if len(titre) < 15:
+                continue
+
+            href = link["href"]
+
+            if (
+                ".pdf" not in href.lower()
+                and "publication" not in href.lower()
+            ):
                 continue
 
             docs.append(
@@ -34,19 +44,19 @@ def get_mef_documents():
                     "Source": "MEF",
                     "Titre": titre,
                     "Date": "",
-                    "Lien": link["href"],
+                    "Lien": urljoin(URL, href),
                     "PDF": (
-                        link["href"]
-                        if ".pdf" in link["href"].lower()
+                        urljoin(URL, href)
+                        if ".pdf" in href.lower()
                         else ""
-                    ),
+                    )
                 }
             )
 
-        return docs[:30]
+        return docs[:50]
 
     except Exception as e:
 
-        print(e)
+        print(f"MEF ERROR : {e}")
 
         return []

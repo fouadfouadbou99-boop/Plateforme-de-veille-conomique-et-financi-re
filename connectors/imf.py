@@ -4,7 +4,6 @@ from urllib.parse import urljoin
 
 URL = "https://www.imf.org/en/news"
 
-
 def get_imf_documents():
 
     docs = []
@@ -24,31 +23,20 @@ def get_imf_documents():
             "html.parser"
         )
 
-        seen = set()
-
         for link in soup.find_all("a", href=True):
 
-            title = link.get_text(strip=True)
+            titre = link.get_text(strip=True)
 
-            if len(title) < 25:
+            if len(titre) < 20:
                 continue
-
-            if title in seen:
-                continue
-
-            seen.add(title)
 
             docs.append(
                 {
                     "Source": "FMI",
-                    "Titre": title,
+                    "Titre": titre,
                     "Date": "",
                     "Lien": urljoin(URL, link["href"]),
-                    "PDF": (
-                        urljoin(URL, link["href"])
-                        if link["href"].lower().endswith(".pdf")
-                        else ""
-                    )
+                    "PDF": ""
                 }
             )
 
@@ -56,6 +44,6 @@ def get_imf_documents():
 
     except Exception as e:
 
-        print(f"FMI ERROR: {e}")
+        print(e)
 
         return []

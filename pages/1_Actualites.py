@@ -45,3 +45,10 @@ if not df.empty:
             )
 
         st.divider()
+st.write(
+    {
+        "BAM": len(get_bam_documents()),
+        "FMI": len(get_imf_documents()),
+        "WB": len(get_worldbank_documents())
+    }
+)

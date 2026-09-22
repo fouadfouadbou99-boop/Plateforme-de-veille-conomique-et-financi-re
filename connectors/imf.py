@@ -1,10 +1,8 @@
-# connectors/imf.py
-
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
-URL = "https://www.imf.org/en/News"
+URL = "https://www.imf.org/en/news"
 
 
 def get_imf_documents():
@@ -15,28 +13,30 @@ def get_imf_documents():
 
         response = requests.get(
             URL,
-            timeout=30,
+            timeout=60,
             headers={
                 "User-Agent": "Mozilla/5.0"
             }
         )
-
-        response.raise_for_status()
 
         soup = BeautifulSoup(
             response.text,
             "html.parser"
         )
 
+        seen = set()
+
         for link in soup.find_all("a", href=True):
 
             title = link.get_text(strip=True)
 
-            if not title:
+            if len(title) < 25:
                 continue
 
-            if len(title) < 20:
+            if title in seen:
                 continue
+
+            seen.add(title)
 
             docs.append(
                 {
@@ -44,9 +44,11 @@ def get_imf_documents():
                     "Titre": title,
                     "Date": "",
                     "Lien": urljoin(URL, link["href"]),
-                    "PDF": link["href"]
-                    if link["href"].lower().endswith(".pdf")
-                    else ""
+                    "PDF": (
+                        urljoin(URL, link["href"])
+                        if link["href"].lower().endswith(".pdf")
+                        else ""
+                    )
                 }
             )
 
@@ -57,4 +59,3 @@ def get_imf_documents():
         print(f"FMI ERROR: {e}")
 
         return []
-``

@@ -1,12 +1,9 @@
 from connectors.hcp import get_hcp_documents
 from connectors.mef import get_mef_documents
-
-try:
-    from connectors.imf import get_imf_documents
-except Exception:
-
-    def get_imf_documents():
-        return []
+from connectors.imf import get_imf_documents
+from connectors.worldbank import get_worldbank_documents
+from connectors.oecd import get_oecd_documents
+from connectors.bam import get_bam_documents
 
 
 def normalize(doc):
@@ -20,39 +17,78 @@ def normalize(doc):
     }
 
 
+def load_source(name, loader):
+
+    try:
+
+        docs = loader()
+
+        print(
+            f"{name}: {len(docs)} documents"
+        )
+
+        return [
+            normalize(x)
+            for x in docs
+        ]
+
+    except Exception as e:
+
+        print(
+            f"{name} ERROR: {e}"
+        )
+
+        return []
+
+
 def get_all_documents():
 
-    documents = []
+    docs = []
 
-    sources = [
-        ("HCP", get_hcp_documents),
-        ("MEF", get_mef_documents),
-        ("IMF", get_imf_documents),
-    ]
+    docs.extend(
+        load_source(
+            "HCP",
+            get_hcp_documents
+        )
+    )
 
-    for source_name, source_function in sources:
+    docs.extend(
+        load_source(
+            "MEF",
+            get_mef_documents
+        )
+    )
 
-        try:
+    docs.extend(
+        load_source(
+            "IMF",
+            get_imf_documents
+        )
+    )
 
-            data = source_function()
+    docs.extend(
+        load_source(
+            "WORLDBANK",
+            get_worldbank_documents
+        )
+    )
 
-            if data:
+    docs.extend(
+        load_source(
+            "OCDE",
+            get_oecd_documents
+        )
+    )
 
-                documents.extend(
-                    [
-                        normalize(x)
-                        for x in data
-                    ]
-                )
+    docs.extend(
+        load_source(
+            "BAM",
+            get_bam_documents
+        )
+    )
 
-            print(
-                f"{source_name}: {len(data)} documents"
-            )
+    print(
+        f"TOTAL: {len(docs)} documents"
+    )
 
-        except Exception as e:
-
-            print(
-                f"{source_name} ERROR: {e}"
-            )
-
-    return documents
+    return docs

@@ -28,7 +28,7 @@ def get_mef_documents():
 
         for link in soup.find_all("a", href=True):
 
-            href = link["href"]
+            href = link.get("href", "")
             titre = link.get_text(strip=True)
 
             if len(titre) < 15:

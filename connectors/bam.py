@@ -2,22 +2,29 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
+URL = "https://www.bkam.ma/Communiques"
 
-URL = "https://www.bkam.ma/fr"
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/130.0 Safari/537.36"
+    )
+}
 
 
 def get_bam_documents():
 
-    documents = []
+    docs = []
 
     try:
 
-        response = requests.get(
+        session = requests.Session()
+
+        response = session.get(
             URL,
-            timeout=30,
-            headers={
-                "User-Agent": "Mozilla/5.0"
-            }
+            headers=HEADERS,
+            timeout=60
         )
 
         response.raise_for_status()
@@ -31,28 +38,26 @@ def get_bam_documents():
 
             titre = link.get_text(strip=True)
 
-            href = link["href"]
-
-            if not titre:
+            if "Lire la suite" in titre:
                 continue
 
-            if len(titre) < 15:
+            if len(titre) < 20:
                 continue
 
-            documents.append(
+            docs.append(
                 {
                     "Source": "BAM",
                     "Titre": titre,
                     "Date": "",
-                    "Lien": urljoin(URL, href),
-                    "PDF": href if href.lower().endswith(".pdf") else ""
+                    "Lien": urljoin(URL, link["href"]),
+                    "PDF": ""
                 }
             )
 
-        return documents[:50]
+        return docs[:30]
 
     except Exception as e:
 
-        print(f"BAM ERROR : {e}")
+        print(f"BAM ERROR: {e}")
 
         return []

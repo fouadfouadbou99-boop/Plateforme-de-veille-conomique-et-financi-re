@@ -19,6 +19,8 @@ def get_mef_documents():
             }
         )
 
+        response.raise_for_status()
+
         soup = BeautifulSoup(
             response.text,
             "html.parser"
@@ -59,4 +61,3 @@ def get_mef_documents():
         print(f"MEF ERROR: {e}")
 
         return []
-``

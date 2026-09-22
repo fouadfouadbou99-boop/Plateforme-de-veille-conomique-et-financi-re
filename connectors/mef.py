@@ -19,6 +19,8 @@ def get_mef_documents():
             }
         )
 
+        response.raise_for_status()
+
         soup = BeautifulSoup(
             response.text,
             "html.parser"
@@ -26,12 +28,11 @@ def get_mef_documents():
 
         for link in soup.find_all("a", href=True):
 
+            href = link["href"]
             titre = link.get_text(strip=True)
 
             if len(titre) < 15:
                 continue
-
-            href = link["href"]
 
             if (
                 ".pdf" not in href.lower()
@@ -49,7 +50,7 @@ def get_mef_documents():
                         urljoin(URL, href)
                         if ".pdf" in href.lower()
                         else ""
-                    )
+                    ),
                 }
             )
 
@@ -57,6 +58,6 @@ def get_mef_documents():
 
     except Exception as e:
 
-        print(f"MEF ERROR : {e}")
+        print(f"MEF ERROR: {e}")
 
         return []

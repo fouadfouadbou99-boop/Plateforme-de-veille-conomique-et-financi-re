@@ -9,16 +9,27 @@ def get_imf_documents():
 
     try:
 
-        feed = feedparser.parse(RSS_URL)
+        feed = feedparser.parse(
+            RSS_URL
+        )
 
         for entry in feed.entries:
 
             docs.append(
                 {
                     "Source": "FMI",
-                    "Titre": entry.get("title", ""),
-                    "Date": entry.get("published", ""),
-                    "Lien": entry.get("link", ""),
+                    "Titre": entry.get(
+                        "title",
+                        ""
+                    ),
+                    "Date": entry.get(
+                        "published",
+                        ""
+                    ),
+                    "Lien": entry.get(
+                        "link",
+                        ""
+                    ),
                     "PDF": ""
                 }
             )

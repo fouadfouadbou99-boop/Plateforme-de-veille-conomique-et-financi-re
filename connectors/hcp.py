@@ -19,8 +19,6 @@ def get_hcp_documents():
             }
         )
 
-        response.raise_for_status()
-
         soup = BeautifulSoup(
             response.text,
             "html.parser"

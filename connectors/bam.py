@@ -31,10 +31,13 @@ def get_bam_documents():
 
             titre = link.get_text(strip=True)
 
-            if len(titre) < 10:
+            href = link["href"]
+
+            if not titre:
                 continue
 
-            href = link["href"]
+            if len(titre) < 15:
+                continue
 
             documents.append(
                 {
@@ -42,11 +45,11 @@ def get_bam_documents():
                     "Titre": titre,
                     "Date": "",
                     "Lien": urljoin(URL, href),
-                    "PDF": ""
+                    "PDF": href if href.lower().endswith(".pdf") else ""
                 }
             )
 
-        return documents[:20]
+        return documents[:50]
 
     except Exception as e:
 

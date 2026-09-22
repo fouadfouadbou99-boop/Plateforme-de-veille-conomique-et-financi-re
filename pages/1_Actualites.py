@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 
+from connectors.aggregator import get_all_documents
+
 st.set_page_config(
     page_title="Actualités",
     page_icon="📰",
@@ -9,46 +11,24 @@ st.set_page_config(
 
 st.title("📰 Veille économique et financière")
 
-try:
-    from connectors.aggregator import get_all_documents
-
-    data = get_all_documents()
-
-except Exception as e:
-    st.error(f"Erreur chargement données : {e}")
-    data = []
+data = get_all_documents()
 
 df = pd.DataFrame(data)
 
-st.write(df)
+if df.empty:
 
-if not df.empty:
+    st.warning(
+        "Aucune actualité disponible."
+    )
 
-    for _, row in df.iterrows():
+else:
 
-        st.markdown(f"### {row.get('Titre','')}")
+    st.metric(
+        "Actualités",
+        len(df)
+    )
 
-        lien = row.get("Lien", "")
-
-        if lien:
-            st.link_button(
-                "🔗 Ouvrir",
-                lien
-            )
-
-        pdf = row.get("PDF", "")
-
-        if pdf:
-            st.link_button(
-                "📄 PDF",
-                pdf
-            )
-
-        st.divider()
-st.write(
-    {
-        "BAM": len(get_bam_documents()),
-        "FMI": len(get_imf_documents()),
-        "WB": len(get_worldbank_documents())
-    }
-)
+    st.dataframe(
+        df,
+        width="stretch"
+    )

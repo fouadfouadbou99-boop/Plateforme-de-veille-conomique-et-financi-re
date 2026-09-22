@@ -18,25 +18,12 @@ def get_worldbank_documents():
             docs.append(
                 {
                     "Source": "Banque Mondiale",
-                    "Titre": entry.get(
-                        "title",
-                        ""
-                    ),
-                    "Date": entry.get(
-                        "published",
-                        ""
-                    ),
-                    "Lien": entry.get(
-                        "link",
-                        ""
-                    ),
+                    "Titre": entry.get("title", ""),
+                    "Date": entry.get("published", ""),
+                    "Lien": entry.get("link", ""),
                     "PDF": ""
                 }
             )
-
-        print(
-            f"WORLDBANK: {len(docs)} documents"
-        )
 
         return docs
 

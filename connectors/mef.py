@@ -1,39 +1,52 @@
-# connectors/mef.py
-
 import requests
 from bs4 import BeautifulSoup
 
 URL = "https://www.finances.gov.ma/fr/Pages/publications.aspx"
 
-
 def get_mef_documents():
 
     docs = []
 
-    response = requests.get(URL, timeout=30)
+    try:
 
-    soup = BeautifulSoup(
-        response.text,
-        "html.parser"
-    )
+        response = requests.get(
+            URL,
+            timeout=60,
+            headers={
+                "User-Agent": "Mozilla/5.0"
+            }
+        )
 
-    for link in soup.find_all("a"):
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser"
+        )
 
-        href = link.get("href")
+        for link in soup.find_all("a", href=True):
 
-        if not href:
-            continue
+            titre = link.get_text(strip=True)
 
-        if ".pdf" in href.lower():
+            if not titre:
+                continue
 
             docs.append(
                 {
                     "Source": "MEF",
-                    "Titre": link.get_text(strip=True),
+                    "Titre": titre,
                     "Date": "",
-                    "Lien": href,
-                    "PDF": href
+                    "Lien": link["href"],
+                    "PDF": (
+                        link["href"]
+                        if ".pdf" in link["href"].lower()
+                        else ""
+                    ),
                 }
             )
 
-    return docs[:30]
+        return docs[:30]
+
+    except Exception as e:
+
+        print(e)
+
+        return []

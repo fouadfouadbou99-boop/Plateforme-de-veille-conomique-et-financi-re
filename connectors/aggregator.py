@@ -1,9 +1,12 @@
 from connectors.hcp import get_hcp_documents
 from connectors.mef import get_mef_documents
-from connectors.imf import get_imf_documents
-from connectors.worldbank import get_worldbank_documents
-from connectors.oecd import get_oecd_documents
-from connectors.bam import get_bam_documents
+
+try:
+    from connectors.imf import get_imf_documents
+except Exception:
+
+    def get_imf_documents():
+        return []
 
 
 def normalize(doc):
@@ -22,19 +25,16 @@ def get_all_documents():
     documents = []
 
     sources = [
-        get_hcp_documents,
-        get_mef_documents,
-        get_imf_documents,
-        get_worldbank_documents,
-        get_oecd_documents,
-        get_bam_documents,
+        ("HCP", get_hcp_documents),
+        ("MEF", get_mef_documents),
+        ("IMF", get_imf_documents),
     ]
 
-    for source in sources:
+    for source_name, source_function in sources:
 
         try:
 
-            data = source()
+            data = source_function()
 
             if data:
 
@@ -45,10 +45,14 @@ def get_all_documents():
                     ]
                 )
 
+            print(
+                f"{source_name}: {len(data)} documents"
+            )
+
         except Exception as e:
 
             print(
-                f"{source.__name__}: {e}"
+                f"{source_name} ERROR: {e}"
             )
 
     return documents

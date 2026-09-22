@@ -26,10 +26,19 @@ def get_mef_documents():
             "html.parser"
         )
 
-        for link in soup.find_all("a", href=True):
+        for link in soup.find_all(
+            "a",
+            href=True
+        ):
 
-            href = link.get("href", "")
-            titre = link.get_text(strip=True)
+            href = link.get(
+                "href",
+                ""
+            )
+
+            titre = link.get_text(
+                strip=True
+            )
 
             if len(titre) < 15:
                 continue
@@ -45,9 +54,15 @@ def get_mef_documents():
                     "Source": "MEF",
                     "Titre": titre,
                     "Date": "",
-                    "Lien": urljoin(URL, href),
+                    "Lien": urljoin(
+                        URL,
+                        href
+                    ),
                     "PDF": (
-                        urljoin(URL, href)
+                        urljoin(
+                            URL,
+                            href
+                        )
                         if ".pdf" in href.lower()
                         else ""
                     )
@@ -61,3 +76,4 @@ def get_mef_documents():
         print(f"MEF ERROR: {e}")
 
         return []
+``

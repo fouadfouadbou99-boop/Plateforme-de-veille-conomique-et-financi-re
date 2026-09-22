@@ -1,17 +1,11 @@
 from connectors.hcp import get_hcp_documents
 from connectors.mef import get_mef_documents
-from connectors.imf import get_imf_documents
 
 try:
-    from connectors.bam import get_bam_documents
+    from connectors.imf import get_imf_documents
 except Exception:
-    def get_bam_documents():
-        return []
 
-try:
-    from connectors.worldbank import get_worldbank_documents
-except Exception:
-    def get_worldbank_documents():
+    def get_imf_documents():
         return []
 
 
@@ -22,7 +16,7 @@ def normalize(doc):
         "Titre": doc.get("Titre", ""),
         "Date": doc.get("Date", ""),
         "Lien": doc.get("Lien", ""),
-        "PDF": doc.get("PDF", "")
+        "PDF": doc.get("PDF", ""),
     }
 
 
@@ -34,8 +28,6 @@ def get_all_documents():
         ("HCP", get_hcp_documents),
         ("MEF", get_mef_documents),
         ("IMF", get_imf_documents),
-        ("BAM", get_bam_documents),
-        ("WORLDBANK", get_worldbank_documents),
     ]
 
     for source_name, source_function in sources:

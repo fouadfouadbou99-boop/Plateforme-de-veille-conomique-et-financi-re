@@ -77,3 +77,32 @@ def get_all_documents():
             )
 
     return documents
+def get_all_documents():
+
+    docs = []
+
+    for source in [
+        get_hcp_documents,
+        get_mef_documents,
+        get_bam_documents,
+        get_ocde_documents,
+        get_imf_documents,
+        get_worldbank_documents,
+    \]:
+
+        try:
+            result = source()
+
+            print(
+                f"{source.__name__} -> {len(result)} documents"
+            )
+
+            docs.extend(result)
+
+        except Exception as e:
+
+            print(
+                f"Erreur {source.__name__}: {e}"
+            )
+
+    return docs

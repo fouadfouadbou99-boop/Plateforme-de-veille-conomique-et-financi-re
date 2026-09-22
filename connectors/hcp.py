@@ -1,7 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 
 URL = "https://www.hcp.ma/"
+
 
 def get_hcp_documents():
 
@@ -17,6 +19,8 @@ def get_hcp_documents():
             }
         )
 
+        response.raise_for_status()
+
         soup = BeautifulSoup(
             response.text,
             "html.parser"
@@ -24,9 +28,13 @@ def get_hcp_documents():
 
         for link in soup.find_all("a", href=True):
 
+            href = link["href"]
             titre = link.get_text(strip=True)
 
-            if len(titre) < 20:
+            if "_a" not in href:
+                continue
+
+            if len(titre) < 15:
                 continue
 
             docs.append(
@@ -34,15 +42,15 @@ def get_hcp_documents():
                     "Source": "HCP",
                     "Titre": titre,
                     "Date": "",
-                    "Lien": link["href"],
+                    "Lien": urljoin(URL, href),
                     "PDF": ""
                 }
             )
 
-        return docs[:30]
+        return docs[:50]
 
     except Exception as e:
 
-        print(e)
+        print(f"HCP ERROR: {e}")
 
         return []

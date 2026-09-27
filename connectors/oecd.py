@@ -1,6 +1,7 @@
-import feedparser
+import requests
+from bs4 import BeautifulSoup
 
-RSS_URL = "https://www.oecd.org/newsroom/index.xml"
+URL = "https://www.oecd.org/newsroom/"
 
 def get_oecd_documents():
 
@@ -8,31 +9,61 @@ def get_oecd_documents():
 
     try:
 
-        feed = feedparser.parse(
-            RSS_URL
+        response = requests.get(
+            URL,
+            timeout=30,
+            headers={
+                "User-Agent":
+                "Mozilla/5.0"
+            }
         )
 
-        print(
-            f"OCDE : {len(feed.entries)} documents"
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser"
         )
 
-        for entry in feed.entries:
+        links = soup.find_all("a")
+
+        for link in links:
+
+            titre = link.get_text(
+                strip=True
+            )
+
+            href = link.get(
+                "href",
+                ""
+            )
+
+            if len(titre) < 30:
+                continue
+
+            if not href:
+                continue
+
+            if href.startswith("/"):
+
+                href = (
+                    "https://www.oecd.org"
+                    + href
+                )
 
             docs.append(
                 {
                     "Source": "OCDE",
-                    "Titre": entry.get(
-                        "title", ""
-                    ),
-                    "Date": entry.get(
-                        "published", ""
-                    ),
-                    "Lien": entry.get(
-                        "link", ""
-                    ),
+                    "Titre": titre,
+                    "Date": "",
+                    "Lien": href,
                     "PDF": ""
                 }
             )
+
+        print(
+            f"OCDE : {len(docs)} documents"
+        )
+
+        return docs[:50]
 
     except Exception as e:
 
@@ -40,4 +71,4 @@ def get_oecd_documents():
             f"OCDE ERROR : {e}"
         )
 
-    return docs
+        return []

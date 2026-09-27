@@ -267,7 +267,7 @@ def synthese_openai():
         ]
     )
 
-  prompt = f"""
+prompt = f"""
 Vous êtes économiste principal au sein d'une institution publique.
 
 À partir des informations ci-dessous, rédigez une note de veille économique

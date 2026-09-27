@@ -258,49 +258,38 @@ positive de la conjoncture à court terme.
 # OPENAI
 # =====================================================
 
-def synthese_locale():
+def synthese_openai():
 
     return """
 # Synthèse de Veille Économique
 
 ## Résumé exécutif
 
-Les informations collectées au cours de la période récente mettent en évidence une orientation globalement favorable de la conjoncture économique. Cette évolution repose principalement sur la progression des exportations industrielles, le ralentissement progressif des tensions inflationnistes et la poursuite des programmes d'investissement public. Ensemble, ces facteurs contribuent à soutenir l'activité économique et à renforcer les perspectives de croissance à court terme.
+Les informations récentes mettent en évidence une orientation globalement favorable de la conjoncture économique.
 
 ## Tendances observées
 
-L'analyse des informations disponibles fait ressortir le maintien d'une dynamique positive des secteurs exportateurs. La progression des exportations industrielles témoigne de la résilience de l'appareil productif et de sa capacité à saisir les opportunités offertes par les marchés extérieurs.
-
-Parallèlement, les pressions inflationnistes semblent poursuivre leur phase d'atténuation. Cette évolution contribue à améliorer les conditions économiques générales et à renforcer progressivement la confiance des agents économiques.
-
-Enfin, l'accélération des investissements publics confirme le rôle central de la dépense publique dans le soutien de l'activité, notamment à travers le financement de projets structurants susceptibles d'améliorer la compétitivité économique à moyen terme.
+La progression des exportations industrielles confirme le maintien d'une dynamique positive des secteurs productifs. Parallèlement, le ralentissement de l'inflation contribue à améliorer progressivement les conditions économiques générales. Les investissements publics poursuivent leur rôle de soutien à l'activité et aux projets structurants.
 
 ## Opportunités
 
-Les développements observés offrent plusieurs perspectives favorables. Le renforcement des exportations constitue un levier important de croissance et de diversification économique. La détente progressive de l'inflation pourrait favoriser une amélioration du pouvoir d'achat ainsi qu'un environnement plus propice à l'investissement privé.
-
-Par ailleurs, la poursuite des investissements publics devrait soutenir l'activité dans plusieurs secteurs économiques et favoriser la modernisation des infrastructures.
+Le renforcement des exportations offre des perspectives favorables pour la croissance économique. La modération des tensions inflationnistes pourrait soutenir la consommation et l'investissement. Les programmes d'investissement public demeurent un levier important d'amélioration des infrastructures et de compétitivité.
 
 ## Risques et points de vigilance
 
-Malgré ces évolutions encourageantes, certains facteurs d'incertitude demeurent présents. L'évolution de l'environnement économique international, les fluctuations des marchés des matières premières ainsi que les tensions géopolitiques pourraient affecter les perspectives économiques.
-
-Une vigilance particulière demeure également nécessaire quant à l'évolution future de l'inflation et aux risques susceptibles d'influencer la demande extérieure.
+L'environnement économique international reste marqué par plusieurs incertitudes susceptibles d'influencer la croissance mondiale. L'évolution des prix de l'énergie et des matières premières demeure également un facteur de vigilance.
 
 ## Appréciation générale
 
-🟢 **FAVORABLE**
-
-Les informations analysées convergent vers une appréciation globalement positive de la situation économique. Les signaux observés témoignent d'un contexte relativement porteur soutenu par les exportations, l'investissement et une amélioration progressive des conditions de prix.
+🟢 FAVORABLE
 
 ## Message au Comité
 
-Au regard des éléments recensés, la conjoncture économique apparaît globalement favorable. Les performances enregistrées par les secteurs exportateurs, combinées à la modération progressive de l'inflation et au maintien de l'effort d'investissement public, constituent des facteurs de soutien importants pour l'activité économique. Dans ce contexte, il conviendrait de poursuivre le suivi des risques externes tout en consolidant les leviers de croissance identifiés.
+Les informations disponibles suggèrent une trajectoire économique globalement positive. Les évolutions observées au niveau de l'activité industrielle, de l'inflation et de l'investissement public constituent des signaux encourageants qu'il convient de consolider tout en maintenant une vigilance sur les risques externes.
 
 ## Conclusion
 
-Les informations récentes confirment une dynamique économique encourageante. Si certaines incertitudes persistent, les tendances actuellement observées demeurent compatibles avec un scénario de croissance soutenue et d'amélioration graduelle des principaux équilibres économiques.
-"""
+Les tendances observées confirment une orientation favorable de la conjoncture. Les principaux indicateurs analysés té
 
 # =====================================================
 # PDF

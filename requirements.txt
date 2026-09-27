@@ -8,3 +8,4 @@ plotly
 pandas
 openpyxl
 streamlit-option-menu
+python-docx

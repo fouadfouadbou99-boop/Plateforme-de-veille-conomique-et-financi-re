@@ -38,4 +38,7 @@ pandas
 requests
 beautifulsoup4
 streamlit
+feedparserstreamlit
 feedparser
+openai>=1.0.0
+reportlab

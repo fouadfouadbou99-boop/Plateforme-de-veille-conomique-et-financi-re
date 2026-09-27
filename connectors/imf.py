@@ -1,6 +1,7 @@
-import feedparser
+import requests
+from bs4 import BeautifulSoup
 
-RSS_URL = "https://www.imf.org/en/News/rss"
+URL = "https://www.imf.org/en/News"
 
 def get_imf_documents():
 
@@ -8,29 +9,61 @@ def get_imf_documents():
 
     try:
 
-        feed = feedparser.parse(RSS_URL)
-
-        print(
-            f"FMI : {len(feed.entries)} documents"
+        response = requests.get(
+            URL,
+            timeout=30,
+            headers={
+                "User-Agent":
+                "Mozilla/5.0"
+            }
         )
 
-        for entry in feed.entries:
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser"
+        )
+
+        links = soup.find_all("a")
+
+        for link in links:
+
+            titre = link.get_text(
+                strip=True
+            )
+
+            href = link.get(
+                "href",
+                ""
+            )
+
+            if len(titre) < 30:
+                continue
+
+            if not href:
+                continue
+
+            if href.startswith("/"):
+
+                href = (
+                    "https://www.imf.org"
+                    + href
+                )
 
             docs.append(
                 {
                     "Source": "FMI",
-                    "Titre": entry.get(
-                        "title", ""
-                    ),
-                    "Date": entry.get(
-                        "published", ""
-                    ),
-                    "Lien": entry.get(
-                        "link", ""
-                    ),
+                    "Titre": titre,
+                    "Date": "",
+                    "Lien": href,
                     "PDF": ""
                 }
             )
+
+        print(
+            f"FMI : {len(docs)} documents"
+        )
+
+        return docs[:50]
 
     except Exception as e:
 
@@ -38,4 +71,4 @@ def get_imf_documents():
             f"FMI ERROR : {e}"
         )
 
-    return docs
+        return []

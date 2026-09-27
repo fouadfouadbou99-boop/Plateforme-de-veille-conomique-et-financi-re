@@ -1,13 +1,26 @@
 import streamlit as st
 import requests
 from openai import OpenAI
-from io import BytesIO
-from reportlab.platypus import (
-    SimpleDocTemplate,
-    Paragraph,
-    Spacer
-)
-from reportlab.lib.styles import getSampleStyleSheet
+
+# =====================================================
+# IMPORT PDF (OPTIONNEL)
+# =====================================================
+
+PDF_AVAILABLE = False
+
+try:
+    from io import BytesIO
+    from reportlab.platypus import (
+        SimpleDocTemplate,
+        Paragraph,
+        Spacer
+    )
+    from reportlab.lib.styles import getSampleStyleSheet
+
+    PDF_AVAILABLE = True
+
+except ImportError:
+    PDF_AVAILABLE = False
 
 # =====================================================
 # CONFIGURATION
@@ -20,10 +33,25 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-NEWS_API_KEY = st.secrets["NEWS_API_KEY"]
-OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+# =====================================================
+# CLÉS API
+# =====================================================
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+try:
+    NEWS_API_KEY = st.secrets["NEWS_API_KEY"]
+    OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+
+    client = OpenAI(
+        api_key=OPENAI_API_KEY
+    )
+
+except Exception:
+
+    st.error(
+        "Impossible de charger les clés API depuis secrets.toml"
+    )
+
+    st.stop()
 
 # =====================================================
 # STYLE
@@ -31,16 +59,15 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 st.markdown("""
 <style>
-.main-header {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #1E3A8A;
-    text-align: center;
-    margin-bottom: 1rem;
-}
-.section-title {
-    color:#1E3A8A;
+.main-header{
+    font-size:2.4rem;
     font-weight:bold;
+    color:#1E3A8A;
+    text-align:center;
+}
+.metric-card{
+    border-radius:10px;
+    padding:10px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -51,25 +78,21 @@ st.markdown(
 )
 
 # =====================================================
-# SECTEURS
+# FILTRES
 # =====================================================
 
 SECTEURS = {
     "Tous": "economy",
-    "Finance": "bank OR finance",
-    "Industrie": "industry OR manufacturing",
+    "Finance": "finance OR banking",
+    "Industrie": "industry",
     "Agriculture": "agriculture",
     "Énergie": "energy OR oil OR gas",
     "Transport": "transport OR logistics",
     "Tourisme": "tourism",
-    "Technologie": "technology OR digital",
+    "Technologie": "technology",
     "Immobilier": "real estate",
-    "Commerce": "retail OR commerce"
+    "Commerce": "retail"
 }
-
-# =====================================================
-# SIDEBAR
-# =====================================================
 
 st.sidebar.header("Filtres")
 
@@ -86,26 +109,34 @@ nombre_articles = st.sidebar.slider(
 )
 
 # =====================================================
-# NEWS API
+# ACTUALITÉS
 # =====================================================
 
 @st.cache_data(ttl=3600)
-def get_news(query):
+def get_news(query, limit):
 
     url = (
         "https://newsapi.org/v2/everything"
         f"?q={query}"
         "&language=fr"
         "&sortBy=publishedAt"
-        f"&pageSize={nombre_articles}"
+        f"&pageSize={limit}"
         f"&apiKey={NEWS_API_KEY}"
     )
 
     try:
-        response = requests.get(url, timeout=30)
+
+        response = requests.get(
+            url,
+            timeout=30
+        )
 
         if response.status_code == 200:
-            return response.json().get("articles", [])
+
+            return response.json().get(
+                "articles",
+                []
+            )
 
         return []
 
@@ -113,17 +144,27 @@ def get_news(query):
         return []
 
 # =====================================================
-# IA
+# SYNTHÈSE IA
 # =====================================================
 
 def generer_synthese(articles):
 
+    if not articles:
+        return "Aucune actualité disponible."
+
     contenu = []
 
-    for article in articles[:20]:
+    for article in articles[:20\]:
 
-        titre = article.get("title", "")
-        resume = article.get("description", "")
+        titre = article.get(
+            "title",
+            ""
+        )
+
+        resume = article.get(
+            "description",
+            ""
+        )
 
         contenu.append(
             f"Titre : {titre}\nRésumé : {resume}"
@@ -132,9 +173,9 @@ def generer_synthese(articles):
     texte = "\n\n".join(contenu)
 
     prompt = f"""
-Tu es un expert en veille économique.
+Vous êtes un expert en veille économique.
 
-Rédige une synthèse professionnelle destinée à un Comité.
+Préparez une note destinée à un comité.
 
 Actualités :
 
@@ -143,7 +184,7 @@ Actualités :
 Structure :
 
 1. Résumé exécutif
-2. Principales tendances
+2. Tendances observées
 3. Opportunités
 4. Risques
 5. Appréciation générale
@@ -165,8 +206,9 @@ Structure :
 
         return response.choices[0].message.content
 
-    except Exception as e:
-        return f"Erreur IA : {e}"
+    except Exception as erreur:
+
+        return f"Erreur lors de la génération : {erreur}"
 
 # =====================================================
 # PDF
@@ -174,53 +216,63 @@ Structure :
 
 def creer_pdf(synthese):
 
+    if not PDF_AVAILABLE:
+        eturn None
+
     buffer = BytesIO()
 
     doc = SimpleDocTemplate(buffer)
 
     styles = getSampleStyleSheet()
 
-    story = []
+    elements = []
 
-    story.append(
+    elements.append(
         Paragraph(
             "Synthèse de Veille Économique",
             styles["Title"]
         )
     )
 
-    story.append(Spacer(1, 12))
+    elements.append(
+        Spacer(1, 12)
+    )
 
     for ligne in synthese.split("\n"):
 
         if ligne.strip():
 
-            story.append(
+            elements.append(
                 Paragraph(
                     ligne,
                     styles["BodyText"]
                 )
             )
 
-            story.append(
-                Spacer(1, 4)
+            elements.append(
+                Spacer(1, 5)
             )
 
-    doc.build(story)
+    doc.build(elements)
 
     buffer.seek(0)
 
     return buffer
 
 # =====================================================
-# CHARGEMENT DES ACTUALITES
+# RÉCUPÉRATION DES DONNÉES
 # =====================================================
 
 requete = SECTEURS[secteur]
 
-with st.spinner("Recherche des actualités..."):
+with st.spinner(
+    "Recherche des actualités..."
+):
 
-    articles = get_news(requete)
+    articles = get_news(
+        requete,
+        nombre_articles
+    )
 
 # =====================================================
 # INDICATEURS
@@ -230,7 +282,7 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     st.metric(
-        "Articles récupérés",
+        "Articles",
         len(articles)
     )
 
@@ -249,15 +301,17 @@ with col3:
 st.divider()
 
 # =====================================================
-# ACTUALITES
+# AFFICHAGE DES NOUVELLES
 # =====================================================
 
-st.subheader("📰 Actualités récentes")
+st.subheader(
+    "📰 Actualités économiques"
+)
 
 if not articles:
 
     st.warning(
-        "Aucune actualité disponible."
+        "Aucune actualité trouvée."
     )
 
 else:
@@ -267,11 +321,6 @@ else:
         titre = article.get(
             "title",
             "Titre indisponible"
-        )
-
-        resume = article.get(
-            "description",
-            ""
         )
 
         source = article.get(
@@ -290,42 +339,56 @@ else:
         if len(date) >= 10:
             date = date[:10]
 
-        with st.container():
+        description = article.get(
+            "description",
+            ""
+        )
 
-            st.markdown(f"### {titre}")
+        st.markdown(
+            f"### {titre}"
+        )
 
-            st.caption(
-                f"📅 {date} | 📰 {source}"
+        st.caption(
+            f"📅 {date} | 📰 {source}"
+        )
+
+        if description:
+            st.write(
+                description
             )
 
-            if resume:
-                st.write(resume)
+        url = article.get("url")
 
-            url = article.get("url")
+        if url:
 
-            if url:
-                st.link_button(
-                    "Lire l'article",
-                    url
-                )
+            st.link_button(
+                "Lire l'article",
+                url
+            )
 
-            st.divider()
+        st.divider()
 
 # =====================================================
-# SYNTHESE
+# SYNTHÈSE
 # =====================================================
 
-st.subheader("📑 Synthèse automatique")
+st.subheader(
+    "📑 Synthèse automatique"
+)
 
-if st.button("Générer la synthèse IA"):
+if st.button(
+    "Générer la synthèse"
+):
 
     with st.spinner(
-        "Analyse des nouvelles en cours..."
+        "Analyse économique en cours..."
     ):
 
-        synthese = generer_synthese(articles)
-
-        st.session_state["synthese"] = synthese
+        st.session_state["synthese"] = (
+            generer_synthese(
+                articles
+            )
+        )
 
 if "synthese" in st.session_state:
 
@@ -333,28 +396,43 @@ if "synthese" in st.session_state:
         st.session_state["synthese"]
     )
 
-    pdf = creer_pdf(
-        st.session_state["synthese"]
-    )
+    if PDF_AVAILABLE:
 
-    st.download_button(
-        label="📥 Télécharger la synthèse PDF",
-        data=pdf,
-        file_name="Synthese_Veille_Economique.pdf",
-        mime="application/pdf"
-    )
+        pdf = creer_pdf(
+            st.session_state["synthese"]
+        )
+
+        st.download_button(
+            label="📥 Télécharger PDF",
+            data=pdf,
+            file_name="Synthese_Veille_Economique.pdf",
+            mime="application/pdf"
+        )
+
+    else:
+
+        st.warning(
+            "ReportLab n'est pas installé. Export PDF désactivé."
+        )
+
+        st.download_button(
+            label="📥 Télécharger TXT",
+            data=st.session_state["synthese"],
+            file_name="Synthese_Veille_Economique.txt",
+            mime="text/plain"
+        )
 
 # =====================================================
-# A PROPOS
+# À PROPOS
 # =====================================================
 
 with st.expander("ℹ️ À propos"):
 
     st.write(
         """
-        Cette plateforme collecte automatiquement
-        les actualités économiques, les filtre par secteur,
-        génère une synthèse assistée par IA et permet
-        l'export PDF pour diffusion aux décideurs.
+        Cette application collecte les nouvelles
+        économiques, permet leur filtrage par secteur,
+        génère une synthèse automatique par IA
+        et produit un export PDF ou texte.
         """
     )

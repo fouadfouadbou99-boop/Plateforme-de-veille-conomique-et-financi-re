@@ -305,9 +305,8 @@ Structure :
             .content
         )
 
-    except Exception as e:
-
-        return f"Erreur OpenAI : {e}"
+    except Exception:
+    return synthese_locale()
 
 # =====================================================
 # PDF

@@ -306,7 +306,7 @@ Structure :
         )
 
     except Exception:
-    return synthese_locale()
+        return synthese_locale()
 
 # =====================================================
 # PDF

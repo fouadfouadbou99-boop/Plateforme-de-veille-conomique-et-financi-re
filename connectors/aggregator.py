@@ -2,29 +2,18 @@ from connectors.hcp import get_hcp_documents
 from connectors.mef import get_mef_documents
 from connectors.bam import get_bam_documents
 from connectors.worldbank import get_worldbank_documents
+from connectors.ecb import get_ecb_documents
 
 try:
     from connectors.imf import get_imf_documents
-except:
+except Exception:
     def get_imf_documents():
         return []
 
 try:
     from connectors.oecd import get_oecd_documents
-except:
+except Exception:
     def get_oecd_documents():
-        return []
-
-try:
-    from connectors.ecb import get_ecb_documents
-except:
-    def get_ecb_documents():
-        return []
-
-try:
-    from connectors.bdf import get_bdf_documents
-except:
-    def get_bdf_documents():
         return []
 
 
@@ -40,15 +29,17 @@ def get_all_documents():
 
         ("BAM", get_bam_documents),
 
-        ("Banque Mondiale", get_worldbank_documents),
+        ("Banque Mondiale",
+         get_worldbank_documents),
 
-        ("FMI", get_imf_documents),
+        ("BCE",
+         get_ecb_documents),
 
-        ("OCDE", get_oecd_documents),
+        ("FMI",
+         get_imf_documents),
 
-        ("BCE", get_ecb_documents),
-
-        ("Banque de France", get_bdf_documents)
+        ("OCDE",
+         get_oecd_documents)
 
     ]
 
@@ -58,21 +49,12 @@ def get_all_documents():
 
             docs = source()
 
+            print(
+                f"{name}: {len(docs)} documents"
+            )
+
             if docs:
-
-                print(
-                    f"{name}: {len(docs)} documents"
-                )
-
-                documents.extend(
-                    docs
-                )
-
-            else:
-
-                print(
-                    f"{name}: 0 document"
-                )
+                documents.extend(docs)
 
         except Exception as e:
 

@@ -1,6 +1,10 @@
 import streamlit as st
 from datetime import datetime
 
+# =====================================================
+# CONFIGURATION
+# =====================================================
+
 st.set_page_config(
     page_title="Plateforme de Veille Économique",
     page_icon="📊",
@@ -16,23 +20,19 @@ st.markdown("""
 
 .main-header{
     text-align:center;
-    color:#1f4e79;
+    color:#1F4E79;
     font-size:42px;
     font-weight:bold;
 }
 
 .subtitle{
     text-align:center;
-    font-size:18px;
     color:#666666;
+    font-size:18px;
 }
 
 </style>
 """, unsafe_allow_html=True)
-
-# =====================================================
-# TITRE
-# =====================================================
 
 st.markdown(
     """
@@ -46,7 +46,7 @@ st.markdown(
 st.markdown(
     """
     <div class="subtitle">
-    Système d'aide à la décision basé sur la veille économique nationale et internationale
+    Veille stratégique destinée aux décideurs
     </div>
     """,
     unsafe_allow_html=True
@@ -55,36 +55,32 @@ st.markdown(
 st.write("")
 
 # =====================================================
-# TABLEAU DE BORD
+# INDICATEURS
 # =====================================================
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-
-    st.metric(
-        "Sources actives",
-        "5"
-    )
-
-with col2:
-
     st.metric(
         "Actualités",
         "123"
     )
 
-with col3:
-
+with col2:
     st.metric(
-        "Documents PDF",
+        "Sources",
+        "5"
+    )
+
+with col3:
+    st.metric(
+        "PDF",
         "50"
     )
 
 with col4:
-
     st.metric(
-        "Mise à jour",
+        "Date",
         datetime.now().strftime(
             "%d/%m/%Y"
         )
@@ -126,7 +122,7 @@ else:
     )
 
 # =====================================================
-# COMMENTAIRE
+# COMMENTAIRE AU COMITE
 # =====================================================
 
 st.subheader(
@@ -147,32 +143,46 @@ Les informations diffusées par les organismes internationaux et les institution
 
 ### Opportunités identifiées
 
-La poursuite des investissements publics constitue un facteur important de soutien à l'activité économique. Les programmes en cours contribuent à renforcer les infrastructures, à améliorer l'attractivité économique et à soutenir l'investissement privé.
+Les informations recensées soulignent plusieurs opportunités favorables à la croissance économique.
 
-Parallèlement, les perspectives de développement de plusieurs secteurs productifs ainsi que le maintien de conditions relativement favorables à l'activité économique offrent des opportunités supplémentaires pour la croissance et l'emploi.
+Celles-ci concernent notamment les investissements structurants, le développement des infrastructures, l'amélioration de la compétitivité ainsi que le renforcement du climat de confiance des acteurs économiques.
+
+La diversité des publications observées suggère également la poursuite des efforts de transformation et de modernisation économique.
 
 ### Risques et points de vigilance
 
-Malgré ces éléments favorables, plusieurs facteurs d'incertitude demeurent présents. L'évolution de la conjoncture internationale, les fluctuations des marchés mondiaux, les tensions géopolitiques ainsi que les risques liés à la croissance mondiale continuent de nécessiter un suivi attentif.
+Malgré ces éléments favorables, plusieurs facteurs d'incertitude demeurent présents.
 
-Une vigilance particulière demeure également recommandée concernant l'évolution des prix, des conditions financières internationales et des principaux facteurs susceptibles d'affecter les perspectives économiques à moyen terme.
+Les évolutions de l'environnement économique international, les risques géopolitiques, les fluctuations des marchés mondiaux et les conditions financières internationales sont susceptibles d'affecter les perspectives de croissance.
+
+Une vigilance particulière demeure également nécessaire concernant les risques externes susceptibles d'influencer l'activité économique nationale.
 
 ### Appréciation globale
 
 🟢 **FAVORABLE**
 
-Au regard des informations analysées, les facteurs de soutien à l'activité économique apparaissent actuellement plus importants que les facteurs de risque identifiés. La situation économique demeure globalement orientée favorablement, tout en justifiant le maintien d'une veille permanente sur l'environnement international.
+Au regard des informations analysées, les facteurs de soutien à l'activité économique apparaissent actuellement plus importants que les facteurs de risque identifiés.
+
+La situation économique demeure globalement orientée favorablement, tout en nécessitant le maintien d'un suivi régulier des principaux indicateurs de conjoncture.
 
 ### Message au Comité
 
-Les éléments recensés dans le cadre de la veille économique suggèrent une situation globalement satisfaisante. Les différents indicateurs suivis mettent en évidence une dynamique économique relativement robuste, soutenue notamment par l'investissement, la modernisation des infrastructures et la résilience observée dans plusieurs secteurs économiques.
+Les informations examinées dans le cadre de la veille économique et financière suggèrent une situation globalement satisfaisante.
 
-Il est recommandé de poursuivre le suivi des évolutions internationales tout en consolidant les leviers de croissance identifiés afin de préserver les perspectives favorables observées au cours de la période récente.
+La dynamique observée est soutenue par la poursuite des investissements, l'activité institutionnelle soutenue ainsi que la mise en œuvre de différentes initiatives économiques.
+
+Dans ce contexte, il est recommandé de poursuivre le suivi rapproché des évolutions internationales ainsi que des principaux indicateurs économiques afin de préserver les perspectives favorables actuellement observées.
+
+### Conclusion
+
+Les publications analysées convergent vers une appréciation positive de la situation économique générale.
+
+Les différents éléments recensés ne font pas apparaître de facteur majeur de dégradation de la conjoncture, même si la surveillance de l'environnement international demeure essentielle.
 """
 )
 
 # =====================================================
-# SOURCES SURVEILLÉES
+# SOURCES SURVEILLEES
 # =====================================================
 
 st.subheader(
@@ -190,7 +200,7 @@ st.markdown(
 )
 
 # =====================================================
-# FONCTIONNALITÉS
+# FONCTIONNALITES
 # =====================================================
 
 st.subheader(
@@ -203,17 +213,19 @@ st.markdown(
 
 ✅ Filtrage par source
 
+✅ Couverture des sources
+
 ✅ Recherche documentaire
 
 ✅ Déduplication automatique
 
 ✅ Téléchargement CSV
 
-✅ Indicateurs de couverture des sources
+✅ Analyse conjoncturelle
 
-✅ Analyse de la conjoncture
+✅ Commentaire automatique au Comité
 
-✅ Préparation des synthèses IA
+✅ Préparation de l'intégration IA
 """
 )
 
@@ -221,14 +233,14 @@ st.markdown(
 # A PROPOS
 # =====================================================
 
-with st.expander(
-    "ℹ️ À propos"
-):
+with st.expander("ℹ️ À propos"):
 
     st.write(
         """
-Cette plateforme centralise les publications économiques et financières issues de plusieurs institutions nationales et internationales.
+Cette plateforme centralise les publications économiques et financières
+issues de plusieurs institutions nationales et internationales.
 
-Les informations collectées sont destinées à alimenter les travaux d'analyse, de veille et de préparation des notes à l'attention des décideurs.
+Elle vise à faciliter les travaux de veille, d'analyse et
+de préparation des notes de conjoncture destinées aux décideurs.
 """
     )

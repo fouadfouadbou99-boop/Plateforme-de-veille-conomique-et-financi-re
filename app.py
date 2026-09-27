@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-from openai import OpenAI
 
 # =====================================================
 # PDF (OPTIONNEL)
@@ -19,7 +18,7 @@ try:
 
     PDF_AVAILABLE = True
 
-except ImportError:
+except Exception:
     PDF_AVAILABLE = False
 
 # =====================================================
@@ -34,24 +33,22 @@ st.set_page_config(
 )
 
 # =====================================================
-# CLÉS API
+# CLÉS API (FACULTATIVES)
 # =====================================================
 
+NEWS_API_KEY = ""
+
+OPENAI_API_KEY = ""
+
 try:
-    NEWS_API_KEY = st.secrets["NEWS_API_KEY"]
-    OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
-
-    client = OpenAI(
-        api_key=OPENAI_API_KEY
-    )
-
+    NEWS_API_KEY = st.secrets.get("NEWS_API_KEY", "")
 except Exception:
+    pass
 
-    st.error(
-        "Impossible de charger les clés API depuis .streamlit/secrets.toml"
-    )
-
-    st.stop()
+try:
+    OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY", "")
+except Exception:
+    pass
 
 # =====================================================
 # STYLE
@@ -59,15 +56,13 @@ except Exception:
 
 st.markdown("""
 <style>
-
 .main-header {
     font-size: 2.4rem;
     font-weight: bold;
     color: #1E3A8A;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -82,11 +77,11 @@ st.markdown(
 
 SECTEURS = {
     "Tous": "economy",
-    "Finance": "finance OR banking",
+    "Finance": "finance",
     "Industrie": "industry",
     "Agriculture": "agriculture",
-    "Énergie": "energy OR oil OR gas",
-    "Transport": "transport OR logistics",
+    "Énergie": "energy",
+    "Transport": "transport",
     "Tourisme": "tourism",
     "Technologie": "technology",
     "Immobilier": "real estate",
@@ -102,9 +97,9 @@ secteur = st.sidebar.selectbox(
 
 nombre_articles = st.sidebar.slider(
     "Nombre d'articles",
-    min_value=5,
-    max_value=50,
-    value=20
+    5,
+    50,
+    20
 )
 
 # =====================================================
@@ -113,6 +108,9 @@ nombre_articles = st.sidebar.slider(
 
 @st.cache_data(ttl=3600)
 def get_news(query, limit):
+
+    if not NEWS_API_KEY:
+        return []
 
     url = (
         "https://newsapi.org/v2/everything"
@@ -131,7 +129,6 @@ def get_news(query, limit):
         )
 
         if response.status_code == 200:
-
             return response.json().get(
                 "articles",
                 []
@@ -143,17 +140,22 @@ def get_news(query, limit):
     return []
 
 # =====================================================
-# SYNTHÈSE IA
+# SYNTHÈSE
 # =====================================================
 
 def generer_synthese(articles):
 
     if not articles:
-        return "Aucune actualité disponible."
 
-    contenu = []
+        return """
+### Aucune synthèse disponible
 
-    for article in articles[:20]:
+Aucune actualité n'a été trouvée ou la clé NewsAPI n'est pas configurée.
+"""
+
+    textes = []
+
+    for article in articles[:20\]:
 
         titre = article.get(
             "title",
@@ -165,55 +167,31 @@ def generer_synthese(articles):
             ""
         )
 
-        contenu.append(
-            f"Titre : {titre}\nRésumé : {resume}"
+        textes.append(
+            f"• {titre}\n{resume}"
         )
 
-    texte = "\n\n".join(contenu)
+    return f"""
+## Synthèse automatique
 
-    prompt = f"""
-Vous êtes un expert en veille économique.
+Nombre d'articles analysés : {len(articles)}
 
-Préparez une note destinée à un comité.
+### Principales informations
 
-Actualités :
+{chr(10).join(textes[:10])}
 
-{texte}
+### Commentaire
 
-Structure :
-
-1. Résumé exécutif
-2. Tendances observées
-3. Opportunités
-4. Risques
-5. Appréciation générale
-6. Conclusion
+Les éléments ci-dessus constituent les principales nouvelles économiques
+collectées automatiquement. Configurez la clé OpenAI ultérieurement pour
+obtenir une synthèse rédigée par intelligence artificielle.
 """
 
-    try:
-
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            temperature=0.3
-        )
-
-        return response.choices[0].message.content
-
-    except Exception as erreur:
-
-        return f"Erreur IA : {erreur}"
-
-# =====================================================
-# EXPORT PDF
+# ====================================================
+# PDF
 # =====================================================
 
-def creer_pdf(synthese):
+def creer_pdf(texte):
 
     if not PDF_AVAILABLE:
         return None
@@ -224,54 +202,46 @@ def creer_pdf(synthese):
 
     styles = getSampleStyleSheet()
 
-    elements = []
+    contenu = []
 
-    elements.append(
+    contenu.append(
         Paragraph(
-            "Synthèse de Veille Économique",
+            "Synthèse de Veille Economique",
             styles["Title"]
         )
     )
 
-    elements.append(
+    contenu.append(
         Spacer(1, 12)
     )
 
-    for ligne in synthese.split("\n"):
+    for ligne in texte.split("\n"):
 
-        ligne = ligne.strip()
+        if ligne.strip():
 
-        if ligne:
-
-            elements.append(
+            contenu.append(
                 Paragraph(
                     ligne,
                     styles["BodyText"]
                 )
             )
 
-            elements.append(
-                Spacer(1, 4)
-            )
-
-    doc.build(elements)
+    doc.build(contenu)
 
     buffer.seek(0)
 
     return buffer
 
 # =====================================================
-# CHARGEMENT DES ARTICLES
+# CHARGEMENT
 # =====================================================
 
 requete = SECTEURS[secteur]
 
-with st.spinner("Recherche des actualités..."):
-
-    articles = get_news(
-        requete,
-        nombre_articles
-    )
+articles = get_news(
+    requete,
+    nombre_articles
+)
 
 # =====================================================
 # TABLEAU DE BORD
@@ -294,10 +264,21 @@ with col2:
 with col3:
     st.metric(
         "Statut",
-        "✅ Actif"
+        "✅ Application active"
     )
 
 st.divider()
+
+# =====================================================
+# INFORMATION CLÉS
+# =====================================================
+
+if not NEWS_API_KEY:
+
+    st.warning(
+        "NEWS_API_KEY non configurée dans Streamlit Cloud. "
+        "L'application fonctionne mais aucune actualité ne peut être chargée."
+    )
 
 # =====================================================
 # ACTUALITÉS
@@ -307,7 +288,7 @@ st.subheader("📰 Actualités économiques")
 
 if not articles:
 
-    st.warning(
+    st.info(
         "Aucune actualité disponible."
     )
 
@@ -363,20 +344,20 @@ else:
         st.divider()
 
 # =====================================================
-# SYNTHÈSE IA
+# SYNTHÈSE
 # =====================================================
 
-st.subheader("📑 Synthèse automatique")
+st.subheader("📑 Synthèse")
 
-if st.button("Générer la synthèse"):
+if st.button(
+    "Générer la synthèse"
+):
 
-    with st.spinner(
-        "Analyse des informations en cours..."
-    ):
-
-        st.session_state["synthese"] = (
-            generer_synthese(articles)
+    st.session_state["synthese"] = (
+        generer_synthese(
+            articles
         )
+    )
 
 if "synthese" in st.session_state:
 
@@ -390,27 +371,14 @@ if "synthese" in st.session_state:
             st.session_state["synthese"]
         )
 
-        if pdf is not None:
+        if pdf:
 
             st.download_button(
-                label="📥 Télécharger PDF",
+                "📥 Télécharger PDF",
                 data=pdf,
                 file_name="Synthese_Veille_Economique.pdf",
                 mime="application/pdf"
             )
-
-    else:
-
-        st.warning(
-            "Le module ReportLab n'est pas installé. Export PDF désactivé."
-        )
-
-        st.download_button(
-            label="📥 Télécharger TXT",
-            data=st.session_state["synthese"],
-            file_name="Synthese_Veille_Economique.txt",
-            mime="text/plain"
-        )
 
 # =====================================================
 # À PROPOS
@@ -420,9 +388,7 @@ with st.expander("ℹ️ À propos"):
 
     st.write(
         """
-        Cette plateforme permet de consulter les actualités
-        économiques par secteur, de générer automatiquement
-        une synthèse destinée à un comité de pilotage et
-        d'exporter cette synthèse au format PDF ou TXT.
+        Plateforme de veille économique avec filtrage sectoriel,
+        consultation des actualités et génération d'une synthèse.
         """
     )

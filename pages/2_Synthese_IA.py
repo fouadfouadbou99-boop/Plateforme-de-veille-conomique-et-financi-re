@@ -11,11 +11,10 @@ from reportlab.platypus import (
     Spacer
 )
 
-from reportlab.lib.styles import (
-    getSampleStyleSheet
-)
+from reportlab.lib.styles import getSampleStyleSheet
 
 from connectors.aggregator import get_all_documents
+
 
 # =====================================================
 # CONFIGURATION
@@ -28,6 +27,7 @@ st.set_page_config(
 )
 
 st.title("🧠 Synthèse économique assistée par IA")
+
 
 # =====================================================
 # OPENAI
@@ -46,8 +46,9 @@ except Exception:
         "OpenAI non configuré. Utilisation de la synthèse locale."
     )
 
+
 # =====================================================
-# DONNEES
+# DONNÉES
 # =====================================================
 
 @st.cache_data(ttl=1800)
@@ -80,6 +81,7 @@ df["Source"] = df["Source"].fillna("Non renseignée").astype(str)
 
 df = df.drop_duplicates(subset=["Titre"])
 
+
 # =====================================================
 # FILTRAGE
 # =====================================================
@@ -94,19 +96,20 @@ MOTS_A_EXCLURE = [
     "Nomenclature"
 ]
 
-masque = ~df["Titre"].str.contains(
-    "|".join(MOTS_A_EXCLURE),
-    case=False,
-    na=False
-)
-
-df = df[masque]
+df = df[
+    ~df["Titre"].str.contains(
+        "|".join(MOTS_A_EXCLURE),
+        case=False,
+        na=False
+    )
+]
 
 if df.empty:
     st.warning(
         "Aucune publication exploitable après filtrage."
     )
     st.stop()
+
 
 # =====================================================
 # INDICATEURS
@@ -132,6 +135,7 @@ with col3:
         len(df)
     )
 
+
 # =====================================================
 # TEXTE SOURCE
 # =====================================================
@@ -141,6 +145,7 @@ texte = "\n\n".join(
     .head(100)
     .tolist()
 )
+
 
 # =====================================================
 # PROMPT
@@ -166,7 +171,6 @@ Structure obligatoire :
 # Risques et points de vigilance
 
 # Appréciation générale
-(Favorable, Stable ou Vigilance)
 
 # Message au Comité
 
@@ -177,19 +181,18 @@ Structure obligatoire :
 Style :
 - institutionnel
 - analytique
-- paragraphes développés
 - vocabulaire économique
 - 700 à 1200 mots
 """
 
+
 # =====================================================
-# SYNTHESE DE SECOURS
+# SYNTHÈSE LOCALE
 # =====================================================
 
 def synthese_secours():
 
     nb_docs = len(df)
-
     nb_sources = df["Source"].nunique()
 
     top_titles = (
@@ -263,8 +266,7 @@ def synthese_secours():
 
 ## Résumé exécutif
 
-L'analyse couvre {nb_docs} publications issues de
-{nb_sources} sources institutionnelles.
+L'analyse couvre {nb_docs} publications provenant de {nb_sources} sources.
 
 ## Publications marquantes
 
@@ -274,20 +276,13 @@ L'analyse couvre {nb_docs} publications issues de
 
 {themes_txt}
 
-Les publications montrent une activité soutenue autour
-des politiques économiques, de l'investissement et de la croissance.
-
 ## Opportunités
 
-Les projets d'investissement, de modernisation et de
-renforcement de la compétitivité constituent les
-principales opportunités observées.
+Les publications mettent en avant plusieurs opportunités liées à l'investissement, à la croissance et à la modernisation économique.
 
 ## Risques et points de vigilance
 
-Les principaux risquesconcernent la conjoncture
-internationale, l'évolution des marchés financiers,
-l'inflation et les tensions économiques externes.
+Les principaux risques concernent la conjoncture internationale, l'inflation et les marchés financiers.
 
 ## Appréciation générale
 
@@ -295,158 +290,15 @@ l'inflation et les tensions économiques externes.
 
 ## Message au Comité
 
-Les informations collectées suggèrent une dynamique
-économique globalement maîtrisée nécessitant un suivi
-régulier des risques externes.
+La dynamique observée demeure globalement positive tout en nécessitant une vigilance continue.
 
 ## Recommandations
 
 - Renforcer la veille économique.
 - Consolider le suivi des investissements.
-- Approfondir l'analyse sectorielle.
-- Maintenir un suivi des risques internationaux.
+- Approfondir les analyses sectorielles.
+- Suivre les risques internationaux.
 
 ## Conclusion
 
-Les publications analysées témoignent d'une activité
-institutionnelle soutenue et d'une orientation
-globalement favorable.
-"""
-# =====================================================
-# IA OPENAI
-# =====================================================
-
-def generer_synthese():
-
-    if client is None:
-        return synthese_secours()
-
-    try:
-
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": PROMPT
-                }
-            ],
-            temperature=0.2
-        )
-
-        return response.choices[0].message.content
-
-    except Exception as e:
-
-        st.warning(
-            f"Erreur OpenAI : {e}"
-        )
-
-        return synthese_secours()
-
-# =====================================================
-# EXPORT PDF
-# =====================================================
-
-def creer_pdf(texte):
-
-    buffer = BytesIO()
-
-    doc = SimpleDocTemplate(buffer)
-
-    styles = getSampleStyleSheet()
-
-    contenu = [
-        Paragraph(
-            "Synthèse économique",
-            styles["Title"]
-        ),
-        Spacer(1, 12)
-    ]
-
-    for ligne in texte.split("\n"):
-
-        if ligne.strip():
-
-            contenu.append(
-                Paragraph(
-                    ligne.replace("&", "&amp;"),
-                    styles["BodyText"]
-                )
-            )
-
-    doc.build(contenu)
-
-    buffer.seek(0)
-
-    return buffer
-
-# =====================================================
-# EXPORT WORD
-# =====================================================
-
-def creer_word(texte):
-
-    document = Document()
-
-    document.add_heading(
-        "Synthèse économique",
-        level=1
-    )
-
-    document.add_paragraph(texte)
-
-    buffer = BytesIO()
-
-    document.save(buffer)
-
-    buffer.seek(0)
-
-    return buffer
-
-# =====================================================
-# GENERATION
-# =====================================================
-
-if st.button(
-    "🚀 Générer la synthèse IA",
-    use_container_width=True
-):
-
-    with st.spinner(
-        "Analyse des publications..."
-    ):
-
-        st.session_state["synthese"] = (
-            generer_synthese()
-        )
-
-# =====================================================
-# AFFICHAGE
-# =====================================================
-
-if "synthese" in st.session_state:
-
-    synthese = st.session_state["synthese"]
-
-    st.markdown(synthese)
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-
-        st.download_button(
-            "📄 Télécharger PDF",
-            data=creer_pdf(synthese),
-            file_name="Synthese_Economique.pdf",
-            mime="application/pdf"
-        )
-
-    with col2:
-
-        st.download_button(
-            "📝 Télécharger Word",
-            data=creer_word(synthese),
-            file_name="Synthese_Economique.docx",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        )
+Les publications 

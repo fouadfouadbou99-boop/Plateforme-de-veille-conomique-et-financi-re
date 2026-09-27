@@ -3,7 +3,7 @@ import requests
 from openai import OpenAI
 
 # =====================================================
-# IMPORT PDF (OPTIONNEL)
+# PDF (OPTIONNEL)
 # =====================================================
 
 PDF_AVAILABLE = False
@@ -48,7 +48,7 @@ try:
 except Exception:
 
     st.error(
-        "Impossible de charger les clés API depuis secrets.toml"
+        "Impossible de charger les clés API depuis .streamlit/secrets.toml"
     )
 
     st.stop()
@@ -59,16 +59,15 @@ except Exception:
 
 st.markdown("""
 <style>
-.main-header{
-    font-size:2.4rem;
-    font-weight:bold;
-    color:#1E3A8A;
-    text-align:center;
+
+.main-header {
+    font-size: 2.4rem;
+    font-weight: bold;
+    color: #1E3A8A;
+    text-align: center;
+    margin-bottom: 20px;
 }
-.metric-card{
-    border-radius:10px;
-    padding:10px;
-}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -103,13 +102,13 @@ secteur = st.sidebar.selectbox(
 
 nombre_articles = st.sidebar.slider(
     "Nombre d'articles",
-    5,
-    50,
-    20
+    min_value=5,
+    max_value=50,
+    value=20
 )
 
 # =====================================================
-# ACTUALITÉS
+# NEWS API
 # =====================================================
 
 @st.cache_data(ttl=3600)
@@ -138,10 +137,10 @@ def get_news(query, limit):
                 []
             )
 
-        return []
-
     except Exception:
-        return []
+        pass
+
+    return []
 
 # =====================================================
 # SYNTHÈSE IA
@@ -208,16 +207,16 @@ Structure :
 
     except Exception as erreur:
 
-        return f"Erreur lors de la génération : {erreur}"
+        return f"Erreur IA : {erreur}"
 
 # =====================================================
-# PDF
+# EXPORT PDF
 # =====================================================
 
 def creer_pdf(synthese):
 
     if not PDF_AVAILABLE:
-        eturn None
+        return None
 
     buffer = BytesIO()
 
@@ -240,7 +239,9 @@ def creer_pdf(synthese):
 
     for ligne in synthese.split("\n"):
 
-        if ligne.strip():
+        ligne = ligne.strip()
+
+        if ligne:
 
             elements.append(
                 Paragraph(
@@ -250,7 +251,7 @@ def creer_pdf(synthese):
             )
 
             elements.append(
-                Spacer(1, 5)
+                Spacer(1, 4)
             )
 
     doc.build(elements)
@@ -260,14 +261,12 @@ def creer_pdf(synthese):
     return buffer
 
 # =====================================================
-# RÉCUPÉRATION DES DONNÉES
+# CHARGEMENT DES ARTICLES
 # =====================================================
 
 requete = SECTEURS[secteur]
 
-with st.spinner(
-    "Recherche des actualités..."
-):
+with st.spinner("Recherche des actualités..."):
 
     articles = get_news(
         requete,
@@ -275,7 +274,7 @@ with st.spinner(
     )
 
 # =====================================================
-# INDICATEURS
+# TABLEAU DE BORD
 # =====================================================
 
 col1, col2, col3 = st.columns(3)
@@ -301,17 +300,15 @@ with col3:
 st.divider()
 
 # =====================================================
-# AFFICHAGE DES NOUVELLES
+# ACTUALITÉS
 # =====================================================
 
-st.subheader(
-    "📰 Actualités économiques"
-)
+st.subheader("📰 Actualités économiques")
 
 if not articles:
 
     st.warning(
-        "Aucune actualité trouvée."
+        "Aucune actualité disponible."
     )
 
 else:
@@ -321,6 +318,11 @@ else:
         titre = article.get(
             "title",
             "Titre indisponible"
+        )
+
+        description = article.get(
+            "description",
+            ""
         )
 
         source = article.get(
@@ -336,13 +338,8 @@ else:
             ""
         )
 
-        if len(date) >= 10:
+        if date:
             date = date[:10]
-
-        description = article.get(
-            "description",
-            ""
-        )
 
         st.markdown(
             f"### {titre}"
@@ -353,14 +350,11 @@ else:
         )
 
         if description:
-            st.write(
-                description
-            )
+            st.write(description)
 
         url = article.get("url")
 
         if url:
-
             st.link_button(
                 "Lire l'article",
                 url
@@ -369,25 +363,19 @@ else:
         st.divider()
 
 # =====================================================
-# SYNTHÈSE
+# SYNTHÈSE IA
 # =====================================================
 
-st.subheader(
-    "📑 Synthèse automatique"
-)
+st.subheader("📑 Synthèse automatique")
 
-if st.button(
-    "Générer la synthèse"
-):
+if st.button("Générer la synthèse"):
 
     with st.spinner(
-        "Analyse économique en cours..."
+        "Analyse des informations en cours..."
     ):
 
         st.session_state["synthese"] = (
-            generer_synthese(
-                articles
-            )
+            generer_synthese(articles)
         )
 
 if "synthese" in st.session_state:
@@ -402,17 +390,19 @@ if "synthese" in st.session_state:
             st.session_state["synthese"]
         )
 
-        st.download_button(
-            label="📥 Télécharger PDF",
-            data=pdf,
-            file_name="Synthese_Veille_Economique.pdf",
-            mime="application/pdf"
-        )
+        if pdf is not None:
+
+            st.download_button(
+                label="📥 Télécharger PDF",
+                data=pdf,
+                file_name="Synthese_Veille_Economique.pdf",
+                mime="application/pdf"
+            )
 
     else:
 
         st.warning(
-            "ReportLab n'est pas installé. Export PDF désactivé."
+            "Le module ReportLab n'est pas installé. Export PDF désactivé."
         )
 
         st.download_button(
@@ -430,9 +420,9 @@ with st.expander("ℹ️ À propos"):
 
     st.write(
         """
-        Cette application collecte les nouvelles
-        économiques, permet leur filtrage par secteur,
-        génère une synthèse automatique par IA
-        et produit un export PDF ou texte.
+        Cette plateforme permet de consulter les actualités
+        économiques par secteur, de générer automatiquement
+        une synthèse destinée à un comité de pilotage et
+        d'exporter cette synthèse au format PDF ou TXT.
         """
     )

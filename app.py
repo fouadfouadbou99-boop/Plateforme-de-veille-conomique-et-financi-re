@@ -267,21 +267,43 @@ def synthese_openai():
         ]
     )
 
-    prompt = f"""
-Produire une synthèse économique professionnelle.
+  prompt = f"""
+Vous êtes économiste principal au sein d'une institution publique.
 
-Actualités :
+À partir des informations ci-dessous, rédigez une note de veille économique
+destinée à un Comité de direction.
+
+Informations analysées :
 
 {texte}
 
-Structure :
+Consignes de rédaction :
 
-- Résumé exécutif
-- Tendances
-- Opportunités
-- Risques
-- Appréciation générale
-- Message au Comité
+- Utiliser un style institutionnel et professionnel.
+- Rédiger en paragraphes complets.
+- Éviter les listes sauf lorsqu'elles apportent une réelle valeur ajoutée.
+- Mettre en évidence les principaux enseignements.
+- Identifier les facteurs favorables et les sources de risque.
+- Situer les informations dans leur contexte économique.
+- Utiliser un vocabulaire d'analyse économique et de conjoncture.
+- Formuler des conclusions directement exploitables par les décideurs.
+
+Structure obligatoire :
+
+## Résumé exécutif
+
+## Tendances observées
+
+## Opportunités
+
+## Risques et points de vigilance
+
+## Appréciation générale
+(Favorable, Stable ou Vigilance)
+
+## Message au Comité
+
+Le texte doit compter entre 400 et 600 mots.
 """
 
     try:

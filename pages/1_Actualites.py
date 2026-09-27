@@ -34,7 +34,7 @@ required_columns = [
     "Titre",
     "Date",
     "Lien",
-    "PDF",
+    "PDF"
 ]
 
 for col in required_columns:
@@ -50,30 +50,44 @@ if df.empty:
 
     st.stop()
 
+# =====================================================
+# INDICATEURS
+# =====================================================
+
 col1, col2, col3 = st.columns(3)
 
-col1.metric(
-    "Actualités",
-    len(df)
-)
+with col1:
 
-col2.metric(
-    "Sources",
-    df["Source"].nunique()
-)
-
-col3.metric(
-    "PDF",
-    len(
-        df[
-            df["PDF"]
-            .astype(str)
-            .str.strip() != ""
-        ]
+    st.metric(
+        "Actualités",
+        len(df)
     )
-)
+
+with col2:
+
+    st.metric(
+        "Sources",
+        df["Source"].nunique()
+    )
+
+with col3:
+
+    st.metric(
+        "PDF",
+        len(
+            df[
+                df["PDF"]
+                .astype(str)
+                .str.strip() != ""
+            ]
+        )
+    )
 
 st.divider()
+
+# =====================================================
+# FILTRES
+# =====================================================
 
 sources = sorted(
     df["Source"]
@@ -109,71 +123,6 @@ if search:
         )
     ]
 
-st.dataframe(
-    df_filtered,
-    width="stretch"
-)
-
-st.divider()
-
-st.subheader(
-    "📄 Détail des publications"
-)
-
-for _, row in df_filtered.iterrows():
-
-    st.markdown(
-        f"### {row['Titre']}"
-    )
-
-    st.write(
-        f"**Source :** {row['Source']}"
-    )
-
-    lien = str(
-        row.get(
-            "Lien",
-            ""
-        )
-    ).strip()
-
-    pdf = str(
-        row.get(
-            "PDF",
-            ""
-        )
-    ).strip()
-
-    c1, c2 = st.columns(2)
-
-    if lien:
-
-        with c1:
-
-            st.link_button(
-                "🔗 Ouvrir",
-                lien
-            )
-
-    if pdf:
-
-        with c2:
-
-            st.link_button(
-                "📄 PDF",
-                pdf
-            )
-
-    st.divider()
-
-print(
-    f"FMI : {len(imf_docs)} documents"
-)
-
-print(
-    f"OCDE : {len(oecd_docs)} documents"
-)
-
-print(
-    f"Banque Mondiale : {len(wb_docs)} documents"
-)
+# =====================================================
+# TABLEAU
+# ====================================

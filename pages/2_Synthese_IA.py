@@ -233,3 +233,147 @@ inflationnistes demeurent des facteurs de vigilance.
 
 La dynamique observée reste globalement favorable.
 """
+# =====================================================
+# IA OPENAI
+# =====================================================
+
+def generer_synthese():
+
+    if client is None:
+        return synthese_secours()
+
+    try:
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": PROMPT
+                }
+            ],
+            temperature=0.2,
+            max_tokens=2500
+        )
+
+        return response.choices[0].message.content
+
+    except Exception as e:
+
+        st.warning(
+            f"Erreur OpenAI : {e}"
+        )
+
+        return synthese_secours()
+
+
+# =====================================================
+# EXPORT PDF
+# =====================================================
+
+def creer_pdf(texte):
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(buffer)
+
+    styles = getSampleStyleSheet()
+
+    contenu = [
+        Paragraph(
+            "Synthèse économique",
+            styles["Title"]
+        ),
+        Spacer(1, 12)
+    ]
+
+    for ligne in texte.split("\n"):
+
+        if ligne.strip():
+
+            contenu.append(
+                Paragraph(
+                    ligne.replace("&", "&amp;"),
+                    styles["BodyText"]
+                )
+            )
+
+    doc.build(contenu)
+
+    buffer.seek(0)
+
+    return buffer
+
+
+# =====================================================
+# EXPORT WORD
+# =====================================================
+
+def creer_word(texte):
+
+    document = Document()
+
+    document.add_heading(
+        "Synthèse économique",
+        level=1
+    )
+
+    document.add_paragraph(texte)
+
+    buffer = BytesIO()
+
+    document.save(buffer)
+
+    buffer.seek(0)
+
+    return buffer
+
+
+# =====================================================
+# GENERATION
+# =====================================================
+
+st.divider()
+
+if st.button(
+    "🚀 Générer la synthèse IA",
+    use_container_width=True
+):
+
+    with st.spinner(
+        "Analyse des publications..."
+    ):
+
+        st.session_state["synthese"] = generer_synthese()
+
+
+# =====================================================
+# AFFICHAGE
+# =====================================================
+
+if "synthese" in st.session_state:
+
+    synthese = st.session_state["synthese"]
+
+    st.markdown("---")
+    st.markdown(synthese)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.download_button(
+            "📄 Télécharger PDF",
+            data=creer_pdf(synthese),
+            file_name="Synthese_Economique.pdf",
+            mime="application/pdf"
+        )
+
+    with col2:
+
+        st.download_button(
+            "📝 Télécharger Word",
+            data=creer_word(synthese),
+            file_name="Synthese_Economique.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )

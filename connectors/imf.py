@@ -1,7 +1,6 @@
 import feedparser
 
-RSS_URL = "https://www.imf.org/en/Publications/RSS"
-
+RSS_URL = "https://www.imf.org/en/News/rss"
 
 def get_imf_documents():
 
@@ -9,8 +8,10 @@ def get_imf_documents():
 
     try:
 
-        feed = feedparser.parse(
-            RSS_URL
+        feed = feedparser.parse(RSS_URL)
+
+        print(
+            f"FMI : {len(feed.entries)} documents"
         )
 
         for entry in feed.entries:
@@ -18,19 +19,23 @@ def get_imf_documents():
             docs.append(
                 {
                     "Source": "FMI",
-                    "Titre": entry.get("title", ""),
-                    "Date": entry.get("published", ""),
-                    "Lien": entry.get("link", ""),
+                    "Titre": entry.get(
+                        "title", ""
+                    ),
+                    "Date": entry.get(
+                        "published", ""
+                    ),
+                    "Lien": entry.get(
+                        "link", ""
+                    ),
                     "PDF": ""
                 }
             )
 
-        return docs
-
     except Exception as e:
 
         print(
-            f"IMF ERROR: {e}"
+            f"FMI ERROR : {e}"
         )
 
-        return []
+    return docs

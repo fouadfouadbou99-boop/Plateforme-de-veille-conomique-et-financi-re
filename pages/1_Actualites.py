@@ -165,3 +165,18 @@ for _, row in df_filtered.iterrows():
             )
 
     st.divider()
+imf_docs = get_imf_documents()
+oecd_docs = get_oecd_documents()
+wb_docs = get_worldbank_documents()
+
+print(
+    f"FMI : {len(imf_docs)} documents"
+)
+
+print(
+    f"OCDE : {len(oecd_docs)} documents"
+)
+
+print(
+    f"Banque Mondiale : {len(wb_docs)} documents"
+)

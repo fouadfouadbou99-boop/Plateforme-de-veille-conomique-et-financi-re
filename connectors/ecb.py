@@ -35,6 +35,10 @@ def get_ecb_documents():
                 }
             )
 
+        print(
+            f"BCE : {len(docs)} documents"
+        )
+
     except Exception as e:
 
         print(

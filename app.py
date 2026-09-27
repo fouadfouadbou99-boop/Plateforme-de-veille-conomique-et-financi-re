@@ -217,6 +217,7 @@ Structure :
 def creer_pdf(synthese):
 
     if not PDF_AVAILABLE:
+        
         eturn None
 
     buffer = BytesIO()

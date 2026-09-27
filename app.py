@@ -155,7 +155,7 @@ Aucune actualité n'a été trouvée ou la clé NewsAPI n'est pas configurée.
 
     textes = []
 
-    for article in articles[:20\]:
+    for article in articles[:20]:
 
         titre = article.get(
             "title",

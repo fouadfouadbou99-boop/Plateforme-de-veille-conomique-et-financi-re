@@ -299,6 +299,23 @@ Il est recommandé de poursuivre le suivi régulier des indicateurs économiques
 
 Les publications recensées témoignent d'une activité institutionnelle soutenue et d'une orientation globalement favorable des facteurs de développement économique. La poursuite de la veille permettra d'anticiper les évolutions futures et d'améliorer l'aide à la décision.
 """
+    MOTS_A_EXCLURE = [
+    "Tout sur",
+    "Vidéothèque",
+    "Galerie",
+    "Accueil",
+    "Contact",
+    "Classement",
+    "Nomenclature"
+]
+
+df = df[
+    ~df["Titre"].astype(str).str.contains(
+        "|".join(MOTS_A_EXCLURE),
+        case=False,
+        na=False
+    )
+]
 # =====================================================
 # IA
 # =====================================================

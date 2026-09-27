@@ -195,110 +195,41 @@ def synthese_secours():
     nb_docs = len(df)
     nb_sources = df["Source"].nunique()
 
-    top_titles = (
-        df["Titre"]
-        .head(20)
-        .tolist()
-    )
-
-    themes = {
-        "Investissement": 0,
-        "Croissance": 0,
-        "Inflation": 0,
-        "Commerce": 0,
-        "Finances publiques": 0
-    }
-
-    for titre in df["Titre"\]:
-
-        t = str(titre).lower()
-
-        if "invest" in t:
-            themes["Investissement"] += 1
-
-        if (
-            "croissance" in t
-            or "activité" in t
-            or "pib" in t
-        ):
-            themes["Croissance"] += 1
-
-        if (
-            "inflation" in t
-            or "prix" in t
-        ):
-            themes["Inflation"] += 1
-
-        if (
-            "export" in t
-            or "import" in t
-            or "commerce" in t
-        ):
-            themes["Commerce"] += 1
-
-        if (
-            "budget" in t
-            or "fiscal" in t
-            or "trésor" in t
-        ):
-            themes["Finances publiques"] += 1
-
-    themes_txt = "\n".join(
-        [
-            f"- {nom} : {valeur}"
-            for nom, valeur in sorted(
-                themes.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )
-        ]
-    )
-
-    publications_txt = "\n".join(
-        [
-            f"- {titre}"
-            for titre in top_titles[:10]
-        ]
-    )
-
     return f"""
 # Synthèse économique et financière
 
 ## Résumé exécutif
 
-L'analyse couvre {nb_docs} publications provenant de {nb_sources} sources.
-
-## Publications marquantes
-
-{publications_txt}
+L'analyse couvre {nb_docs} publications
+issues de {nb_sources} sources.
 
 ## Tendances observées
 
-{themes_txt}
+Les publications analysées mettent en évidence
+une activité économique soutenue et une diversité
+des thématiques suivies.
 
 ## Opportunités
 
-Les publications mettent en avant plusieurs opportunités liées à l'investissement, à la croissance et à la modernisation économique.
+Les projets d'investissement et les réformes
+économiques constituent les principales opportunités.
 
-## Risques et points de vigilance
+## Risques
 
-Les principaux risques concernent la conjoncture internationale, l'inflation et les marchés financiers.
+La conjoncture internationale et les tensions
+inflationnistes demeurent des facteurs de vigilance.
 
 ## Appréciation générale
 
 🟡 STABLE AVEC ORIENTATION FAVORABLE
 
-## Message au Comité
-
-La dynamique observée demeure globalement positive tout en nécessitant une vigilance continue.
-
 ## Recommandations
 
-- Renforcer la veille économique.
-- Consolider le suivi des investissements.
-- Approfondir les analyses sectorielles.
-- Suivre les risques internationaux.
+- Renforcer la veille.
+- Consolider l'analyse sectorielle.
+- Suivre les indicateurs macroéconomiques.
 
 ## Conclusion
 
-Les publications 
+La dynamique observée reste globalement favorable.
+"""

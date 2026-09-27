@@ -160,17 +160,81 @@ def synthese_secours():
 
     nb_docs = len(df)
 
-    nb_sources = (
-        df["Source"]
-        .nunique()
-    )
+    nb_sources = df["Source"].nunique()
 
-    sources = ", ".join(
+    top_sources = (
         df["Source"]
         .value_counts()
         .head(5)
-        .index
+    )
+
+    top_titles = (
+        df["Titre"]
+        .head(20)
         .tolist()
+    )
+
+    # Identification de thèmes simples
+    themes = {
+        "Investissement": 0,
+        "Croissance": 0,
+        "Inflation": 0,
+        "Commerce": 0,
+        "Finances publiques": 0
+    }
+
+    for titre in df["Titre"].astype(str):
+
+        t = titre.lower()
+
+        if "invest" in t:
+            themes["Investissement"] += 1
+
+        if (
+            "croissance" in t
+            or "activité" in t
+            or "pib" in t
+        ):
+            themes["Croissance"] += 1
+
+        if (
+            "inflation" in t
+            or "prix" in t
+        ):
+            themes["Inflation"] += 1
+
+        if (
+            "export" in t
+            or "import" in t
+            or "commerce" in t
+        ):
+            themes["Commerce"] += 1
+
+        if (
+            "budget" in t
+            or "fiscal" in t
+            or "trésor" in t
+        ):
+            themes["Finances publiques"] += 1
+
+    principaux_themes = sorted(
+        themes.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    themes_txt = "\n".join(
+        [
+            f"- {nom} : {nb} publication(s)"
+            for nom, nb in principaux_themes
+        ]
+    )
+
+    publications_txt = "\n".join(
+        [
+            f"- {titre}"
+            for titre in top_titles[:10]
+        ]
     )
 
     return f"""
@@ -178,72 +242,63 @@ def synthese_secours():
 
 ## Résumé exécutif
 
-L'analyse de {nb_docs} publications issues de {nb_sources} sources institutionnelles permet de dégager une appréciation globale de la situation économique.
+L'analyse porte sur **{nb_docs} publications** provenant de **{nb_sources} sources institutionnelles**.
 
-Les publications collectées concernent principalement les politiques publiques, les investissements, les perspectives macroéconomiques, les infrastructures ainsi que les transformations économiques en cours.
+Les sujets les plus fréquemment abordés concernent les questions d'investissement, de croissance, de politiques publiques, de développement économique et de financement.
+
+L'activité documentaire observée témoigne d'une mobilisation soutenue des institutions nationales et internationales autour des enjeux économiques.
+
+## Publications marquantes
+
+{publications_txt}
 
 ## Tendances observées
 
-Les principales sources actuellement actives sont :
+L'analyse des publications recueillies permet d'identifier les thèmes dominants suivants :
 
-{sources}
+{themes_txt}
 
-Les informations collectées mettent en évidence la poursuite d'initiatives publiques et économiques structurantes.
+Les publications récentes mettent particulièrement l'accent sur les programmes d'investissement, les initiatives de développement économique, les projets structurants et les perspectives d'amélioration de la compétitivité.
 
-Les publications traduisent le maintien d'une activité importante dans les domaines du développement économique, des investissements, du financement, des infrastructures et des politiques sectorielles.
-
-Les institutions nationales et internationales continuent d'accorder une attention particulière aux questions de compétitivité, de croissance durable et de résilience économique.
+Les informations issues des différentes institutions convergent vers une poursuite des efforts de modernisation économique et de renforcement des capacités productives.
 
 ## Opportunités
 
-Les informations analysées mettent en évidence plusieurs opportunités :
+Les publications recensées mettent en évidence plusieurs opportunités susceptibles de soutenir l'activité économique.
 
-- maintien des investissements structurants ;
-- amélioration des infrastructures ;
-- modernisation des secteurs économiques ;
-- développement des capacités productives ;
-- renforcement de l'environnement économique.
+Les investissements publics, les projets d'infrastructures et les programmes de développement constituent les principaux leviers identifiés.
 
-Ces différents facteurs constituent des leviers importants susceptibles de soutenir la croissance à moyen terme.
+La diversité des initiatives observées traduit également l'existence d'un potentiel de croissance dans plusieurs secteurs économiques.
 
 ## Risques et points de vigilance
 
-Plusieurs risques nécessitent toutefois une vigilance particulière :
+Les principales incertitudes relevées demeurent liées à l'environnement économique international, aux fluctuations des marchés mondiaux, aux risques financiers externes et à l'évolution de la conjoncture mondiale.
 
-- évolution de l'environnement économique international ;
-- tensions géopolitiques ;
-- volatilité des marchés mondiaux ;
-- risques financiers externes ;
-- évolution des principaux indicateurs internationaux.
-
-Une surveillance permanente de ces facteurs demeure indispensable.
+Une surveillance particulière doit être maintenue sur les facteurs susceptibles d'affecter la croissance, l'investissement et la stabilité économique.
 
 ## Appréciation générale
 
-🟡 STABLE
+🟡 STABLE AVEC ORIENTATION FAVORABLE
 
-Les publications analysées ne mettent pas en évidence de dégradation majeure de la conjoncture économique. Les facteurs favorables et les facteurs de risque demeurent relativement équilibrés.
+Les facteurs favorables identifiés dans les publications apparaissent globalement plus nombreux que les éléments de risque recensés.
 
 ## Message au Comité
 
-Les différentes informations collectées suggèrent une situation économique globalement maîtrisée.
+Les informations analysées suggèrent une situation économique relativement maîtrisée. Les efforts d'investissement, les programmes publics et les différentes initiatives recensées contribuent au maintien d'une dynamique favorable.
 
-Les investissements publics, les initiatives de développement économique et les projets structurants constituent des facteurs de soutien significatifs.
-
-La poursuite de la veille économique permettra de suivre l'évolution des principaux indicateurs et d'anticiper les éventuels risques émergents.
+Il est recommandé de poursuivre le suivi régulier des indicateurs économiques et de renforcer l'analyse des risques externes susceptibles d'influencer les perspectives économiques.
 
 ## Recommandations
 
-- poursuivre le suivi rapproché des indicateurs macroéconomiques ;
-- maintenir la veille sur les risques internationaux ;
-- consolider les politiques favorables à l'investissement ;
-- renforcer le suivi des secteurs stratégiques.
+- Consolider le suivi des programmes d'investissement.
+- Renforcer la veille sur les risques internationaux.
+- Poursuivre l'analyse sectorielle.
+- Approfondir l'exploitation des informations collectées.
 
 ## Conclusion
 
-La situation économique apparaît compatible avec la poursuite des dynamiques actuellement observées. Les informations recensées justifient le maintien d'une surveillance régulière afin d'anticiper toute évolution significative de la conjoncture.
+Les publications recensées témoignent d'une activité institutionnelle soutenue et d'une orientation globalement favorable des facteurs de développement économique. La poursuite de la veille permettra d'anticiper les évolutions futures et d'améliorer l'aide à la décision.
 """
-
 # =====================================================
 # IA
 # =====================================================

@@ -1,25 +1,6 @@
 import streamlit as st
-import requests
-
-# =====================================================
-# PDF (OPTIONNEL)
-# =====================================================
-
-PDF_AVAILABLE = False
-
-try:
-    from io import BytesIO
-    from reportlab.platypus import (
-        SimpleDocTemplate,
-        Paragraph,
-        Spacer
-    )
-    from reportlab.lib.styles import getSampleStyleSheet
-
-    PDF_AVAILABLE = True
-
-except Exception:
-    PDF_AVAILABLE = False
+import feedparser
+from datetime import datetime
 
 # =====================================================
 # CONFIGURATION
@@ -28,27 +9,8 @@ except Exception:
 st.set_page_config(
     page_title="Veille Économique",
     page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
-
-# =====================================================
-# CLÉS API (FACULTATIVES)
-# =====================================================
-
-NEWS_API_KEY = ""
-
-OPENAI_API_KEY = ""
-
-try:
-    NEWS_API_KEY = st.secrets.get("NEWS_API_KEY", "")
-except Exception:
-    pass
-
-try:
-    OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY", "")
-except Exception:
-    pass
 
 # =====================================================
 # STYLE
@@ -56,12 +18,12 @@ except Exception:
 
 st.markdown("""
 <style>
-.main-header {
-    font-size: 2.4rem;
-    font-weight: bold;
-    color: #1E3A8A;
-    text-align: center;
-    margin-bottom: 15px;
+.main-header{
+    text-align:center;
+    color:#1f4e79;
+    font-size:42px;
+    font-weight:bold;
+    margin-bottom:20px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -72,27 +34,31 @@ st.markdown(
 )
 
 # =====================================================
-# FILTRES
+# SECTEURS
 # =====================================================
 
-SECTEURS = {
-    "Tous": "economy",
-    "Finance": "finance",
-    "Industrie": "industry",
-    "Agriculture": "agriculture",
-    "Énergie": "energy",
-    "Transport": "transport",
-    "Tourisme": "tourism",
-    "Technologie": "technology",
-    "Immobilier": "real estate",
-    "Commerce": "retail"
-}
+SECTEURS = [
+    "Tous",
+    "Finance",
+    "Industrie",
+    "Agriculture",
+    "Énergie",
+    "Transport",
+    "Tourisme",
+    "Technologie",
+    "Immobilier",
+    "Commerce"
+]
+
+# =====================================================
+# SIDEBAR
+# =====================================================
 
 st.sidebar.header("Filtres")
 
 secteur = st.sidebar.selectbox(
     "Secteur économique",
-    list(SECTEURS.keys())
+    SECTEURS
 )
 
 nombre_articles = st.sidebar.slider(
@@ -103,41 +69,43 @@ nombre_articles = st.sidebar.slider(
 )
 
 # =====================================================
-# NEWS API
+# RSS
+# =====================================================
+
+RSS_FEEDS = [
+    "https://feeds.reuters.com/reuters/businessNews",
+    "https://www.oecd.org/newsroom/rss.xml"
+]
+
+# =====================================================
+# ACTUALITÉS
 # =====================================================
 
 @st.cache_data(ttl=3600)
-def get_news(query, limit):
+def get_news(limit):
 
-    if not NEWS_API_KEY:
-        return []
+    articles = []
 
-    url = (
-        "https://newsapi.org/v2/everything"
-        f"?q={query}"
-        "&language=fr"
-        "&sortBy=publishedAt"
-        f"&pageSize={limit}"
-        f"&apiKey={NEWS_API_KEY}"
-    )
+    for rss_url in RSS_FEEDS:
 
-    try:
+        try:
 
-        response = requests.get(
-            url,
-            timeout=30
-        )
+            feed = feedparser.parse(rss_url)
 
-        if response.status_code == 200:
-            return response.json().get(
-                "articles",
-                []
-            )
+            for item in feed.entries:
 
-    except Exception:
-        pass
+                articles.append({
+                    "title": item.get("title", ""),
+                    "description": item.get("summary", ""),
+                    "publishedAt": item.get("published", ""),
+                    "url": item.get("link", ""),
+                    "source": rss_url
+                })
 
-    return []
+        except Exception:
+            pass
+
+    return articles[:limit]
 
 # =====================================================
 # SYNTHÈSE
@@ -145,106 +113,50 @@ def get_news(query, limit):
 
 def generer_synthese(articles):
 
-    if not articles:
-
+    if len(articles) == 0:
         return """
-### Aucune synthèse disponible
+## Aucune synthèse disponible
 
-Aucune actualité n'a été trouvée ou la clé NewsAPI n'est pas configurée.
+Aucune actualité économique n'a été récupérée.
 """
 
-    textes = []
+    titres = []
 
     for article in articles[:20]:
 
-        titre = article.get(
-            "title",
-            ""
-        )
+        titre = article.get("title", "")
 
-        resume = article.get(
-            "description",
-            ""
-        )
+        if titre:
+            titres.append(f"• {titre}")
 
-        textes.append(
-            f"• {titre}\n{resume}"
-        )
+    texte = "\n".join(titres)
 
     return f"""
 ## Synthèse automatique
 
 Nombre d'articles analysés : {len(articles)}
 
-### Principales informations
+### Principales nouvelles
 
-{chr(10).join(textes[:10])}
+{texte}
 
 ### Commentaire
 
-Les éléments ci-dessus constituent les principales nouvelles économiques
-collectées automatiquement. Configurez la clé OpenAI ultérieurement pour
-obtenir une synthèse rédigée par intelligence artificielle.
+Les nouvelles recensées mettent en évidence les principaux
+événements économiques publiés récemment par les sources suivies.
+
+Cette synthèse est générée automatiquement à partir des titres
+des articles collectés.
 """
 
-# ====================================================
-# PDF
+# =====================================================
+# DONNÉES
 # =====================================================
 
-def creer_pdf(texte):
-
-    if not PDF_AVAILABLE:
-        return None
-
-    buffer = BytesIO()
-
-    doc = SimpleDocTemplate(buffer)
-
-    styles = getSampleStyleSheet()
-
-    contenu = []
-
-    contenu.append(
-        Paragraph(
-            "Synthèse de Veille Economique",
-            styles["Title"]
-        )
-    )
-
-    contenu.append(
-        Spacer(1, 12)
-    )
-
-    for ligne in texte.split("\n"):
-
-        if ligne.strip():
-
-            contenu.append(
-                Paragraph(
-                    ligne,
-                    styles["BodyText"]
-                )
-            )
-
-    doc.build(contenu)
-
-    buffer.seek(0)
-
-    return buffer
+articles = get_news(nombre_articles)
 
 # =====================================================
-# CHARGEMENT
-# =====================================================
-
-requete = SECTEURS[secteur]
-
-articles = get_news(
-    requete,
-    nombre_articles
-)
-
-# =====================================================
-# TABLEAU DE BORD
+# INDICATEURS
 # =====================================================
 
 col1, col2, col3 = st.columns(3)
@@ -263,22 +175,11 @@ with col2:
 
 with col3:
     st.metric(
-        "Statut",
-        "✅ Application active"
+        "Date",
+        datetime.now().strftime("%d/%m/%Y")
     )
 
 st.divider()
-
-# =====================================================
-# INFORMATION CLÉS
-# =====================================================
-
-if not NEWS_API_KEY:
-
-    st.warning(
-        "NEWS_API_KEY non configurée dans Streamlit Cloud. "
-        "L'application fonctionne mais aucune actualité ne peut être chargée."
-    )
 
 # =====================================================
 # ACTUALITÉS
@@ -286,7 +187,7 @@ if not NEWS_API_KEY:
 
 st.subheader("📰 Actualités économiques")
 
-if not articles:
+if len(articles) == 0:
 
     st.info(
         "Aucune actualité disponible."
@@ -306,28 +207,26 @@ else:
             ""
         )
 
-        source = article.get(
-            "source",
-            {}
-        ).get(
-            "name",
-            "Source inconnue"
-        )
-
         date = article.get(
             "publishedAt",
             ""
         )
 
-        if date:
-            date = date[:10]
+        source = article.get(
+            "source",
+            ""
+        )
 
         st.markdown(
             f"### {titre}"
         )
 
         st.caption(
-            f"📅 {date} | 📰 {source}"
+            f"📅 {date}"
+        )
+
+        st.caption(
+            f"📰 Source : {source}"
         )
 
         if description:
@@ -336,6 +235,7 @@ else:
         url = article.get("url")
 
         if url:
+
             st.link_button(
                 "Lire l'article",
                 url
@@ -349,14 +249,10 @@ else:
 
 st.subheader("📑 Synthèse")
 
-if st.button(
-    "Générer la synthèse"
-):
+if st.button("Générer la synthèse"):
 
     st.session_state["synthese"] = (
-        generer_synthese(
-            articles
-        )
+        generer_synthese(articles)
     )
 
 if "synthese" in st.session_state:
@@ -365,30 +261,16 @@ if "synthese" in st.session_state:
         st.session_state["synthese"]
     )
 
-    if PDF_AVAILABLE:
-
-        pdf = creer_pdf(
-            st.session_state["synthese"]
-        )
-
-        if pdf:
-
-            st.download_button(
-                "📥 Télécharger PDF",
-                data=pdf,
-                file_name="Synthese_Veille_Economique.pdf",
-                mime="application/pdf"
-            )
-
 # =====================================================
-# À PROPOS
+# A PROPOS
 # =====================================================
 
 with st.expander("ℹ️ À propos"):
 
     st.write(
         """
-        Plateforme de veille économique avec filtrage sectoriel,
-        consultation des actualités et génération d'une synthèse.
-        """
+Cette plateforme récupère automatiquement des actualités
+économiques depuis plusieurs flux RSS publics et génère
+une synthèse simplifiée des principales nouvelles.
+"""
     )

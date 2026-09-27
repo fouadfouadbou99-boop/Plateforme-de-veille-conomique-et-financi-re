@@ -1,8 +1,19 @@
 import streamlit as st
+import feedparser
+from openai import OpenAI
 from datetime import datetime
+from io import BytesIO
+
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer
+)
+
+from reportlab.lib.styles import getSampleStyleSheet
 
 # =====================================================
-# CONFIGURATION
+# CONFIG
 # =====================================================
 
 st.set_page_config(
@@ -12,164 +23,186 @@ st.set_page_config(
 )
 
 # =====================================================
+# OPENAI
+# =====================================================
+
+client = None
+
+try:
+
+    OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+
+    client = OpenAI(
+        api_key=OPENAI_API_KEY
+    )
+
+except:
+    pass
+
+# =====================================================
 # STYLE
 # =====================================================
 
 st.markdown("""
 <style>
+
 .main-header{
     text-align:center;
-    color:#1f4e79;
     font-size:42px;
     font-weight:bold;
-    margin-bottom:20px;
+    color:#1f4e79;
+    margin-bottom:30px;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown(
-    '<div class="main-header">📊 Plateforme de Veille Économique</div>',
+    """
+    <div class="main-header">
+    📊 Plateforme de Veille Économique
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
 # =====================================================
-# DONNÉES DE DÉMONSTRATION
+# FILTRES
 # =====================================================
 
-ACTUALITES = [
-
-    {
-        "titre": "Hausse des exportations industrielles",
-        "date": "27/09/2026",
-        "source": "Direction des Études Économiques",
-        "resume": "Les exportations industrielles poursuivent leur progression grâce aux secteurs automobile et aéronautique."
-    },
-
-    {
-        "titre": "Inflation en ralentissement",
-        "date": "27/09/2026",
-        "source": "Banque Centrale",
-        "resume": "Le rythme de croissance des prix continue de ralentir sous l'effet de la baisse des coûts énergétiques."
-    },
-
-    {
-        "titre": "Investissements publics en hausse",
-        "date": "27/09/2026",
-        "source": "Ministère des Finances",
-        "resume": "De nouveaux projets d'investissement devraient soutenir l'activité économique."
-    }
-
+SECTEURS = [
+    "Tous",
+    "Industrie",
+    "Finance",
+    "Agriculture",
+    "Énergie",
+    "Transport",
+    "Tourisme"
 ]
-
-# =====================================================
-# SIDEBAR
-# =====================================================
 
 st.sidebar.header("Filtres")
 
 secteur = st.sidebar.selectbox(
     "Secteur économique",
-    [
-        "Tous",
-        "Industrie",
-        "Finance",
-        "Agriculture",
-        "Énergie",
-        "Transport",
-        "Tourisme"
-    ]
+    SECTEURS
+)
+
+nombre_articles = st.sidebar.slider(
+    "Nombre d'articles",
+    5,
+    50,
+    20
 )
 
 # =====================================================
-# INDICATEURS
+# RSS
 # =====================================================
 
-col1, col2, col3 = st.columns(3)
+RSS_SOURCES = {
+    "HCP":
+        "https://www.hcp.ma/rss.xml",
 
-with col1:
-    st.metric(
-        "Articles",
-        len(ACTUALITES)
-    )
+    "MEF":
+        "https://www.finances.gov.ma/rss.xml",
 
-with col2:
-    st.metric(
-        "Secteur",
-        secteur
-    )
+    "BAM":
+        "https://www.bkam.ma/rss",
 
-with col3:
-    st.metric(
-        "Date",
-        datetime.now().strftime("%d/%m/%Y")
-    )
-
-st.divider()
+    "IMF":
+        "https://www.imf.org/en/News/RSS"
+}
 
 # =====================================================
-# ACTUALITÉS
+# ACTUALITES
 # =====================================================
 
-st.subheader("📰 Actualités économiques")
+@st.cache_data(ttl=3600)
+def get_news(limit):
 
-for article in ACTUALITES:
+    articles = []
 
-    st.markdown(
-        f"### {article['titre']}"
-    )
+    for source, url in RSS_SOURCES.items():
 
-    st.caption(
-        f"📅 {article['date']} | 📰 {article['source']}"
-    )
+        try:
 
-    st.write(
-        article["resume"]
-    )
+            feed = feedparser.parse(url)
 
-    st.divider()
+            for item in feed.entries:
 
-# =====================================================
-# SYNTHÈSE
-# =====================================================
+                articles.append({
 
-st.subheader("📑 Synthèse")
+                    "titre":
+                        item.get("title", ""),
 
-if st.button("Générer la synthèse"):
+                    "resume":
+                        item.get(
+                            "summary",
+                            ""
+                        ),
 
-    synthese = """
-### Synthèse automatique
+                    "date":
+                        item.get(
+                            "published",
+                            ""
+                        ),
 
-L'analyse des informations disponibles met en évidence
-une orientation globalement favorable de la conjoncture.
+                    "source":
+                        source,
 
-Les exportations industrielles affichent une progression
-soutenue tandis que les tensions inflationnistes
-continuent de s'atténuer.
+                    "url":
+                        item.get(
+                            "link",
+                            ""
+                        )
+                })
 
-Les investissements publics demeurent un facteur
-important de soutien de l'activité économique.
+        except:
+            pass
 
-Appréciation générale : Favorable.
-"""
-
-    st.session_state["synthese"] = synthese
-
-if "synthese" in st.session_state:
-
-    st.markdown(
-        st.session_state["synthese"]
-    )
+    return articles[:limit]
 
 # =====================================================
-# À PROPOS
+# APPRECIATION
 # =====================================================
 
-with st.expander("ℹ️ À propos"):
+def evaluer_conjoncture(texte):
 
-    st.write(
-        """
-Cette plateforme de veille économique permet de
-consulter les nouvelles économiques et de produire
-une synthèse destinée aux décideurs.
-"""
-    )
+    score = 0
+
+    mots_positifs = [
+        "croissance",
+        "hausse",
+        "investissement",
+        "progression",
+        "amélioration"
+    ]
+
+    mots_negatifs = [
+        "baisse",
+        "crise",
+        "recul",
+        "inflation",
+        "ralentissement"
+    ]
+
+    contenu = texte.lower()
+
+    for mot in mots_positifs:
+
+        if mot in contenu:
+            score += 1
+
+    for mot in mots_negatifs:
+
+        if mot in contenu:
+            score -= 1
+
+    if score >= 2:
+        return "🟢 FAVORABLE"
+
+    if score <= -2:
+        return "🔴 VIGILANCE"
+
+    return "🟡 STABLE"
+
+# ===============================

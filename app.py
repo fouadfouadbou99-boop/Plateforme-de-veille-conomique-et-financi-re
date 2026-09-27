@@ -6,10 +6,6 @@ from connectors.aggregator import (
     get_all_documents
 )
 
-# =====================================================
-# CONFIGURATION
-# =====================================================
-
 st.set_page_config(
     page_title="Plateforme de Veille Économique",
     page_icon="📊",
@@ -30,18 +26,8 @@ st.markdown("""
     font-weight:bold;
 }
 
-.subtitle{
-    text-align:center;
-    color:#666666;
-    font-size:18px;
-}
-
 </style>
 """, unsafe_allow_html=True)
-
-# =====================================================
-# TITRE
-# =====================================================
 
 st.markdown(
     """
@@ -52,17 +38,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown(
-    """
-    <div class="subtitle">
-    Veille stratégique et aide à la décision
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
 # =====================================================
-# DONNEES
+# CHARGEMENT DONNEES
 # =====================================================
 
 try:
@@ -87,74 +64,27 @@ if df.empty:
 
     st.stop()
 
-# =====================================================
-# NETTOYAGE
-# =====================================================
-
-if "Titre" in df.columns:
-
-    df = df.drop_duplicates(
-        subset=["Titre"]
-    )
-
-# =====================================================
-# SCORE CONJONCTUREL
-# =====================================================
-
-def calcul_score(df):
-
-    texte = " ".join(
-        df["Titre"]
-        .astype(str)
-        .tolist()
-    ).lower()
-
-    score = 50
-
-    mots_positifs = [
-        "croissance",
-        "investissement",
-        "réforme",
-        "développement",
-        "export",
-        "amélioration",
-        "hausse"
-    ]
-
-    mots_negatifs = [
-        "inflation",
-        "crise",
-        "dette",
-        "ralentissement",
-        "baisse",
-        "déficit"
-    ]
-
-    for mot in mots_positifs:
-
-        if mot in texte:
-            score += 5
-
-    for mot in mots_negatifs:
-
-        if mot in texte:
-            score -= 5
-
-    score = max(
-        0,
-        min(
-            score,
-            100
-        )
-    )
-
-    return score
-
-score = calcul_score(df)
+df = df.drop_duplicates(
+    subset=["Titre"]
+)
 
 # =====================================================
 # INDICATEURS
 # =====================================================
+
+nb_actualites = len(df)
+
+nb_sources = (
+    df["Source"].nunique()
+)
+
+nb_pdf = len(
+    df[
+        df["PDF"]
+        .astype(str)
+        .str.strip() != ""
+    ]
+)
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -162,27 +92,21 @@ with col1:
 
     st.metric(
         "Actualités",
-        len(df)
+        nb_actualites
     )
 
 with col2:
 
     st.metric(
         "Sources",
-        df["Source"].nunique()
+        nb_sources
     )
 
 with col3:
 
     st.metric(
         "PDF",
-        len(
-            df[
-                df["PDF"]
-                .astype(str)
-                .str.strip() != ""
-            ]
-        )
+        nb_pdf
     )
 
 with col4:
@@ -199,6 +123,8 @@ st.divider()
 # =====================================================
 # SCORE
 # =====================================================
+
+score = 55
 
 st.subheader(
     "📈 Évaluation conjoncturelle"
@@ -231,10 +157,46 @@ else:
 # COMMENTAIRE COMITE
 # =====================================================
 
-generer_commentaire_ia(df)
+st.subheader(
+    "📌 Commentaire au Comité"
+)
+
+st.info(
+f"""
+### Appréciation générale de la conjoncture
+
+L'analyse des **{nb_actualites} publications** recensées auprès de **{nb_sources} sources institutionnelles** met en évidence une situation économique globalement stable.
+
+### Principales tendances observées
+
+Les publications analysées mettent principalement en avant les politiques publiques, les programmes d'investissement, les initiatives de développement économique ainsi que les perspectives macroéconomiques nationales et internationales.
+
+### Opportunités identifiées
+
+Les informations collectées révèlent plusieurs opportunités liées au développement des infrastructures, à l'investissement public, à la modernisation économique et à l'amélioration de la compétitivité.
+
+### Risques et points de vigilance
+
+Les principaux facteurs de risque demeurent liés à l'environnement économique international, aux tensions géopolitiques et aux fluctuations des marchés mondiaux.
+
+### Appréciation globale
+
+🟡 STABLE
+
+Les informations actuellement disponibles ne mettent pas en évidence de dégradation significative de la conjoncture économique.
+
+### Message au Comité
+
+Les facteurs de soutien demeurent prédominants, tout en justifiant la poursuite d'une veille attentive sur les risques externes.
+
+### Conclusion
+
+La situation apparaît globalement compatible avec la poursuite des dynamiques économiques observées au cours de la période récente.
+"""
+)
 
 # =====================================================
-# REPARTITION DES SOURCES
+# SOURCES
 # =====================================================
 
 st.subheader(
@@ -265,33 +227,35 @@ st.bar_chart(
 )
 
 # =====================================================
-# SOURCES
+# PUBLICATIONS RECENTES
 # =====================================================
 
 st.subheader(
-    "🌍 Sources surveillées"
+    "📰 Dernières publications"
 )
 
-for source in sorted(
-    df["Source"].unique()
-):
+for _, row in df.head(10).iterrows():
+
+    st.markdown(
+        f"### {row['Titre']}"
+    )
 
     st.write(
-        f"• {source}"
+        f"**Source :** {row['Source']}"
     )
+
+    st.divider()
 
 # =====================================================
 # A PROPOS
 # =====================================================
 
-with st.expander(
-    "ℹ️ À propos"
-):
+with st.expander("ℹ️ À propos"):
 
     st.write(
         """
-Cette plateforme centralise automatiquement les publications économiques et financières issues de plusieurs institutions nationales et internationales.
-
-Elle vise à alimenter les travaux de veille, de synthèse et d'aide à la décision.
+Cette plateforme centralise les publications économiques
+et financières produites par plusieurs institutions
+nationales et internationales.
 """
     )

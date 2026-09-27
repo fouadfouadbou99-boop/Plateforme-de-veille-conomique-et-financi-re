@@ -260,6 +260,9 @@ positive de la conjoncture à court terme.
 
 def synthese_openai():
 
+    if not OPENAI_AVAILABLE:
+        return synthese_locale()
+
     texte = "\n".join(
         [
             a["titre"] + " : " + a["resume"]
@@ -267,7 +270,7 @@ def synthese_openai():
         ]
     )
 
-prompt = f"""
+    prompt = f"""
 Vous êtes économiste principal au sein d'une institution publique.
 
 À partir des informations ci-dessous, rédigez une note de veille économique
@@ -283,9 +286,7 @@ Consignes de rédaction :
 - Rédiger en paragraphes complets.
 - Éviter les listes sauf lorsqu'elles apportent une réelle valeur ajoutée.
 - Mettre en évidence les principaux enseignements.
-- Identifier les facteurs favorables et les sources de risque.
-- Situer les informations dans leur contexte économique.
-- Utiliser un vocabulaire d'analyse économique et de conjoncture.
+- Identifier les facteurs favorables et les risques.
 - Formuler des conclusions directement exploitables par les décideurs.
 
 Structure obligatoire :
@@ -299,35 +300,29 @@ Structure obligatoire :
 ## Risques et points de vigilance
 
 ## Appréciation générale
-(Favorable, Stable ou Vigilance)
 
 ## Message au Comité
 
-Le texte doit compter entre 400 et 600 mots.
+Longueur : 400 à 600 mots.
 """
 
     try:
 
         reponse = client.chat.completions.create(
-
             model="gpt-4o",
-
             messages=[
                 {
                     "role": "user",
                     "content": prompt
                 }
-            ]
+            ],
+            temperature=0.3
         )
 
-        return (
-            reponse
-            .choices[0]
-            .message
-            .content
-        )
+        return reponse.choices[0].message.content
 
     except Exception:
+
         return synthese_locale()
 
 # =====================================================

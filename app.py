@@ -231,42 +231,7 @@ else:
 # COMMENTAIRE COMITE
 # =====================================================
 
-st.subheader(
-    "📌 Commentaire au Comité"
-)
-
-st.info(
-    f"""
-### Appréciation générale de la conjoncture
-
-L'analyse des {len(df)} publications recensées auprès des différentes institutions nationales et internationales met en évidence une orientation globalement favorable de la situation économique.
-
-### Principales tendances observées
-
-Les informations collectées témoignent d'une activité institutionnelle soutenue. Les publications mettent en avant les politiques publiques, les investissements, les perspectives macroéconomiques ainsi que plusieurs initiatives de développement économique.
-
-### Opportunités identifiées
-
-La densité des publications consacrées aux investissements, aux infrastructures, au développement économique et aux réformes constitue un signal favorable pour les perspectives économiques.
-
-### Risques et points de vigilance
-
-L'environnement international demeure marqué par diverses incertitudes liées à la croissance mondiale, aux conditions financières internationales, à l'évolution des échanges commerciaux et aux tensions géopolitiques.
-
-### Appréciation globale
-
-{'🟢 FAVORABLE' if score >= 75 else '🟡 STABLE' if score >= 50 else '🔴 VIGILANCE'}
-
-### Message au Comité
-
-Les informations actuellement disponibles ne mettent pas en évidence de dégradation significative de la conjoncture économique. Les facteurs de soutien demeurent prédominants, tout en justifiant la poursuite d'une veille attentive sur les risques externes.
-
-### Conclusion
-
-La situation apparaît globalement favorable et compatible avec la poursuite des dynamiques économiques observées au cours de la période récente.
-"""
-)
-
+generer_commentaire_ia(df)
 # =====================================================
 # REPARTITION DES SOURCES
 # =====================================================

@@ -1,16 +1,34 @@
 from connectors.hcp import get_hcp_documents
 from connectors.mef import get_mef_documents
 
+# IMF
 try:
     from connectors.imf import get_imf_documents
 except Exception:
     def get_imf_documents():
         return []
 
+# BAM
 try:
     from connectors.bam import get_bam_documents
 except Exception:
     def get_bam_documents():
+        return []
+
+# OECD
+try:
+    from connectors.oecd import get_oecd_documents
+except Exception:
+    def get_oecd_documents():
+        return []
+
+# World Bank
+try:
+    from connectors.worldbank import (
+        get_worldbank_documents
+    )
+except Exception:
+    def get_worldbank_documents():
         return []
 
 
@@ -19,10 +37,20 @@ def get_all_documents():
     documents = []
 
     sources = [
+
         ("HCP", get_hcp_documents),
+
         ("MEF", get_mef_documents),
+
         ("IMF", get_imf_documents),
+
         ("BAM", get_bam_documents),
+
+        ("OCDE", get_oecd_documents),
+
+        ("Banque Mondiale",
+         get_worldbank_documents),
+
     ]
 
     for name, source in sources:

@@ -154,7 +154,7 @@ def generer_synthese(articles):
 
     contenu = []
 
-    for article in articles[:20]:
+    for article in articles[:20\]:
 
         titre = article.get(
             "title",
@@ -217,7 +217,6 @@ Structure :
 def creer_pdf(synthese):
 
     if not PDF_AVAILABLE:
-        
         eturn None
 
     buffer = BytesIO()

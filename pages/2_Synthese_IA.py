@@ -377,3 +377,61 @@ if "synthese" in st.session_state:
             file_name="Synthese_Economique.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
+def generer_synthese():
+
+    if client is None:
+        return synthese_secours()
+
+    try:
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": PROMPT
+                }
+            ],
+            temperature=0.2,
+            max_tokens=2500
+        )
+
+        return response.choices[0].message.content
+
+    except Exception as e:
+
+        st.warning(f"Erreur OpenAI : {e}")
+
+        return synthese_secours()
+
+
+def creer_pdf(texte):
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(buffer)
+
+    styles = getSampleStyleSheet()
+
+    contenu = [
+        Paragraph(
+            "Synthèse économique",
+            styles["Title"]
+        ),
+        Spacer(1, 12)
+    ]
+
+    for ligne in texte.split("\n"):
+
+        if ligne.strip():
+
+            contenu.append(
+                Paragraph(
+                    ligne.replace("&", "&amp;"),
+                    styles["BodyText"]
+                )
+            )
+
+    doc.build(contenu)
+
+    buffer.seek

@@ -135,11 +135,39 @@ st.subheader(
 
 st.info(
     """
-Les informations actuellement collectées suggèrent une orientation globalement favorable de la conjoncture économique.
+### Appréciation générale de la conjoncture
 
-Les publications récentes mettent en évidence la poursuite de l'investissement public, la résilience de plusieurs secteurs économiques ainsi qu'un environnement globalement porteur.
+L'examen des informations collectées auprès des différentes institutions nationales et internationales met en évidence une orientation globalement favorable de la conjoncture économique. Les publications récentes convergent vers un diagnostic caractérisé par la résilience de l'activité économique, le maintien de l'effort d'investissement public et la poursuite de plusieurs programmes de développement économique.
 
-Une attention particulière demeure néanmoins nécessaire concernant l'évolution de l'environnement économique international.
+### Principales tendances observées
+
+Les informations disponibles témoignent d'une dynamique relativement positive dans plusieurs secteurs de l'économie. Les investissements publics continuent de soutenir l'activité économique et les projets structurants. Les publications institutionnelles mettent également en évidence la poursuite des efforts de modernisation économique et le renforcement progressif de certains indicateurs économiques.
+
+Les informations diffusées par les organismes internationaux et les institutions financières confirment par ailleurs l'importance du maintien de politiques favorables au développement économique, à l'investissement et à l'amélioration de la compétitivité.
+
+### Opportunités identifiées
+
+La poursuite des investissements publics constitue un facteur important de soutien à l'activité économique. Les programmes en cours contribuent à renforcer les infrastructures, à améliorer l'attractivité économique et à soutenir l'investissement privé.
+
+Parallèlement, les perspectives de développement de plusieurs secteurs productifs ainsi que le maintien de conditions relativement favorables à l'activité économique offrent des opportunités supplémentaires pour la croissance et l'emploi.
+
+### Risques et points de vigilance
+
+Malgré ces éléments favorables, plusieurs facteurs d'incertitude demeurent présents. L'évolution de la conjoncture internationale, les fluctuations des marchés mondiaux, les tensions géopolitiques ainsi que les risques liés à la croissance mondiale continuent de nécessiter un suivi attentif.
+
+Une vigilance particulière demeure également recommandée concernant l'évolution des prix, des conditions financières internationales et des principaux facteurs susceptibles d'affecter les perspectives économiques à moyen terme.
+
+### Appréciation globale
+
+🟢 **FAVORABLE**
+
+Au regard des informations analysées, les facteurs de soutien à l'activité économique apparaissent actuellement plus importants que les facteurs de risque identifiés. La situation économique demeure globalement orientée favorablement, tout en justifiant le maintien d'une veille permanente sur l'environnement international.
+
+### Message au Comité
+
+Les éléments recensés dans le cadre de la veille économique suggèrent une situation globalement satisfaisante. Les différents indicateurs suivis mettent en évidence une dynamique économique relativement robuste, soutenue notamment par l'investissement, la modernisation des infrastructures et la résilience observée dans plusieurs secteurs économiques.
+
+Il est recommandé de poursuivre le suivi des évolutions internationales tout en consolidant les leviers de croissance identifiés afin de préserver les perspectives favorables observées au cours de la période récente.
 """
 )
 

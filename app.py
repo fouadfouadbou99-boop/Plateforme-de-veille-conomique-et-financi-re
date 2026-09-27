@@ -258,72 +258,49 @@ positive de la conjoncture à court terme.
 # OPENAI
 # =====================================================
 
-def synthese_openai():
+def synthese_locale():
 
-    if not OPENAI_AVAILABLE:
-        return synthese_locale()
-
-    texte = "\n".join(
-        [
-            a["titre"] + " : " + a["resume"]
-            for a in ACTUALITES
-        ]
-    )
-
-    prompt = f"""
-Vous êtes économiste principal au sein d'une institution publique.
-
-À partir des informations ci-dessous, rédigez une note de veille économique
-destinée à un Comité de direction.
-
-Informations analysées :
-
-{texte}
-
-Consignes de rédaction :
-
-- Utiliser un style institutionnel et professionnel.
-- Rédiger en paragraphes complets.
-- Éviter les listes sauf lorsqu'elles apportent une réelle valeur ajoutée.
-- Mettre en évidence les principaux enseignements.
-- Identifier les facteurs favorables et les risques.
-- Formuler des conclusions directement exploitables par les décideurs.
-
-Structure obligatoire :
+    return """
+# Synthèse de Veille Économique
 
 ## Résumé exécutif
 
+Les informations collectées au cours de la période récente mettent en évidence une orientation globalement favorable de la conjoncture économique. Cette évolution repose principalement sur la progression des exportations industrielles, le ralentissement progressif des tensions inflationnistes et la poursuite des programmes d'investissement public. Ensemble, ces facteurs contribuent à soutenir l'activité économique et à renforcer les perspectives de croissance à court terme.
+
 ## Tendances observées
+
+L'analyse des informations disponibles fait ressortir le maintien d'une dynamique positive des secteurs exportateurs. La progression des exportations industrielles témoigne de la résilience de l'appareil productif et de sa capacité à saisir les opportunités offertes par les marchés extérieurs.
+
+Parallèlement, les pressions inflationnistes semblent poursuivre leur phase d'atténuation. Cette évolution contribue à améliorer les conditions économiques générales et à renforcer progressivement la confiance des agents économiques.
+
+Enfin, l'accélération des investissements publics confirme le rôle central de la dépense publique dans le soutien de l'activité, notamment à travers le financement de projets structurants susceptibles d'améliorer la compétitivité économique à moyen terme.
 
 ## Opportunités
 
+Les développements observés offrent plusieurs perspectives favorables. Le renforcement des exportations constitue un levier important de croissance et de diversification économique. La détente progressive de l'inflation pourrait favoriser une amélioration du pouvoir d'achat ainsi qu'un environnement plus propice à l'investissement privé.
+
+Par ailleurs, la poursuite des investissements publics devrait soutenir l'activité dans plusieurs secteurs économiques et favoriser la modernisation des infrastructures.
+
 ## Risques et points de vigilance
+
+Malgré ces évolutions encourageantes, certains facteurs d'incertitude demeurent présents. L'évolution de l'environnement économique international, les fluctuations des marchés des matières premières ainsi que les tensions géopolitiques pourraient affecter les perspectives économiques.
+
+Une vigilance particulière demeure également nécessaire quant à l'évolution future de l'inflation et aux risques susceptibles d'influencer la demande extérieure.
 
 ## Appréciation générale
 
+🟢 **FAVORABLE**
+
+Les informations analysées convergent vers une appréciation globalement positive de la situation économique. Les signaux observés témoignent d'un contexte relativement porteur soutenu par les exportations, l'investissement et une amélioration progressive des conditions de prix.
+
 ## Message au Comité
 
-Longueur : 400 à 600 mots.
+Au regard des éléments recensés, la conjoncture économique apparaît globalement favorable. Les performances enregistrées par les secteurs exportateurs, combinées à la modération progressive de l'inflation et au maintien de l'effort d'investissement public, constituent des facteurs de soutien importants pour l'activité économique. Dans ce contexte, il conviendrait de poursuivre le suivi des risques externes tout en consolidant les leviers de croissance identifiés.
+
+## Conclusion
+
+Les informations récentes confirment une dynamique économique encourageante. Si certaines incertitudes persistent, les tendances actuellement observées demeurent compatibles avec un scénario de croissance soutenue et d'amélioration graduelle des principaux équilibres économiques.
 """
-
-    try:
-
-        reponse = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            temperature=0.3
-        )
-
-        return reponse.choices[0].message.content
-
-    except Exception:
-
-        return synthese_locale()
 
 # =====================================================
 # PDF

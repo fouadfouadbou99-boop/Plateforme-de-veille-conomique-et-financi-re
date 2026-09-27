@@ -5,10 +5,6 @@ from connectors.aggregator import (
     get_all_documents
 )
 
-# =====================================================
-# CONFIGURATION
-# =====================================================
-
 st.set_page_config(
     page_title="Actualités",
     page_icon="📰",
@@ -20,7 +16,7 @@ st.title(
 )
 
 # =====================================================
-# CHARGEMENT DES DONNÉES
+# CHARGEMENT
 # =====================================================
 
 try:
@@ -38,7 +34,7 @@ except Exception as e:
 df = pd.DataFrame(data)
 
 # =====================================================
-# STRUCTURE MINIMALE
+# COLONNES STANDARD
 # =====================================================
 
 required_columns = [
@@ -54,10 +50,6 @@ for col in required_columns:
     if col not in df.columns:
         df[col] = ""
 
-# =====================================================
-# AUCUNE DONNÉE
-# =====================================================
-
 if df.empty:
 
     st.warning(
@@ -67,18 +59,12 @@ if df.empty:
     st.stop()
 
 # =====================================================
-# SUPPRESSION DES DOUBLONS
+# NETTOYAGE
 # =====================================================
 
-if "Titre" in df.columns:
-
-    df = df.drop_duplicates(
-        subset=["Titre"]
-    )
-
-# =====================================================
-# TRI PAR DATE
-# =====================================================
+df = df.drop_duplicates(
+    subset=["Titre"]
+)
 
 try:
 
@@ -143,7 +129,7 @@ with col4:
 st.divider()
 
 # =====================================================
-# TABLEAU DES SOURCES
+# COUVERTURE DES SOURCES
 # =====================================================
 
 st.subheader(
@@ -158,7 +144,7 @@ resume_sources = (
           name="Documents"
       )
       .sort_values(
-          by="Documents",
+          "Documents",
           ascending=False
       )
 
@@ -169,6 +155,12 @@ st.dataframe(
     width="stretch"
 )
 
+st.bar_chart(
+    resume_sources.set_index(
+        "Source"
+    )
+)
+
 st.divider()
 
 # =====================================================
@@ -176,9 +168,7 @@ st.divider()
 # =====================================================
 
 sources = sorted(
-    df["Source"]
-    .fillna("")
-    .unique()
+    df["Source"].unique()
 )
 
 selected_sources = st.multiselect(
@@ -218,14 +208,14 @@ csv = df_filtered.to_csv(
 ).encode("utf-8")
 
 st.download_button(
-    label="📥 Télécharger CSV",
-    data=csv,
-    file_name="veille_economique.csv",
-    mime="text/csv"
+    "📥 Télécharger CSV",
+    csv,
+    "veille_economique.csv",
+    "text/csv"
 )
 
 # =====================================================
-# TABLEAU DES DONNÉES
+# TABLEAU
 # =====================================================
 
 st.dataframe(
@@ -236,7 +226,7 @@ st.dataframe(
 st.divider()
 
 # =====================================================
-# DÉTAIL DES PUBLICATIONS
+# DETAIL
 # =====================================================
 
 st.subheader(
@@ -253,34 +243,21 @@ for _, row in df_filtered.iterrows():
         f"**Source :** {row['Source']}"
     )
 
-    date = str(
-        row.get(
-            "Date",
-            ""
-        )
-    ).strip()
-
-    if date:
+    if str(row["Date"]).strip():
 
         st.write(
-            f"**Date :** {date}"
+            f"**Date :** {row['Date']}"
         )
 
+    c1, c2 = st.columns(2)
+
     lien = str(
-        row.get(
-            "Lien",
-            ""
-        )
+        row["Lien"]
     ).strip()
 
     pdf = str(
-        row.get(
-            "PDF",
-            ""
-        )
+        row["PDF"]
     ).strip()
-
-    c1, c2 = st.columns(2)
 
     if lien:
 
@@ -296,7 +273,7 @@ for _, row in df_filtered.iterrows():
         with c2:
 
             st.link_button(
-                "📄 Télécharger PDF",
+                "📄 PDF",
                 pdf
             )
 

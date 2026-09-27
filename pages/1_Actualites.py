@@ -5,6 +5,10 @@ from connectors.aggregator import (
     get_all_documents
 )
 
+# =====================================================
+# CONFIGURATION
+# =====================================================
+
 st.set_page_config(
     page_title="Actualités",
     page_icon="📰",
@@ -15,7 +19,12 @@ st.title(
     "📰 Veille économique et financière"
 )
 
+# =====================================================
+# CHARGEMENT DES DONNÉES
+# =====================================================
+
 try:
+
     data = get_all_documents()
 
 except Exception as e:
@@ -27,6 +36,10 @@ except Exception as e:
     data = []
 
 df = pd.DataFrame(data)
+
+# =====================================================
+# STRUCTURE MINIMALE
+# =====================================================
 
 required_columns = [
     "Source",
@@ -41,6 +54,10 @@ for col in required_columns:
     if col not in df.columns:
         df[col] = ""
 
+# =====================================================
+# AUCUNE DONNÉE
+# =====================================================
+
 if df.empty:
 
     st.warning(
@@ -49,30 +66,114 @@ if df.empty:
 
     st.stop()
 
-col1, col2, col3 = st.columns(3)
+# =====================================================
+# SUPPRESSION DES DOUBLONS
+# =====================================================
 
-col1.metric(
-    "Actualités",
-    len(df)
-)
+if "Titre" in df.columns:
 
-col2.metric(
-    "Sources",
-    df["Source"].nunique()
-)
-
-col3.metric(
-    "PDF",
-    len(
-        df[
-            df["PDF"]
-            .astype(str)
-            .str.strip() != ""
-        ]
+    df = df.drop_duplicates(
+        subset=["Titre"]
     )
+
+# =====================================================
+# TRI PAR DATE
+# =====================================================
+
+try:
+
+    df["Date_tmp"] = pd.to_datetime(
+        df["Date"],
+        errors="coerce"
+    )
+
+    df = df.sort_values(
+        by="Date_tmp",
+        ascending=False
+    )
+
+    df.drop(
+        columns=["Date_tmp"],
+        inplace=True
+    )
+
+except Exception:
+    pass
+
+# =====================================================
+# INDICATEURS
+# =====================================================
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+
+    st.metric(
+        "Actualités",
+        len(df)
+    )
+
+with col2:
+
+    st.metric(
+        "Sources",
+        df["Source"].nunique()
+    )
+
+with col3:
+
+    st.metric(
+        "PDF",
+        len(
+            df[
+                df["PDF"]
+                .astype(str)
+                .str.strip() != ""
+            ]
+        )
+    )
+
+with col4:
+
+    st.metric(
+        "Articles uniques",
+        len(df)
+    )
+
+st.divider()
+
+# =====================================================
+# TABLEAU DES SOURCES
+# =====================================================
+
+st.subheader(
+    "📊 Couverture des sources"
+)
+
+resume_sources = (
+
+    df.groupby("Source")
+      .size()
+      .reset_index(
+          name="Documents"
+      )
+      .sort_values(
+          by="Documents",
+          ascending=False
+      )
+
+)
+
+st.dataframe(
+    resume_sources,
+    width="stretch"
 )
 
 st.divider()
+
+# =====================================================
+# FILTRES
+# =====================================================
 
 sources = sorted(
     df["Source"]
@@ -108,12 +209,35 @@ if search:
         )
     ]
 
+# =====================================================
+# EXPORT CSV
+# =====================================================
+
+csv = df_filtered.to_csv(
+    index=False
+).encode("utf-8")
+
+st.download_button(
+    label="📥 Télécharger CSV",
+    data=csv,
+    file_name="veille_economique.csv",
+    mime="text/csv"
+)
+
+# =====================================================
+# TABLEAU DES DONNÉES
+# =====================================================
+
 st.dataframe(
     df_filtered,
     width="stretch"
 )
 
 st.divider()
+
+# =====================================================
+# DÉTAIL DES PUBLICATIONS
+# =====================================================
 
 st.subheader(
     "📄 Détail des publications"
@@ -129,10 +253,17 @@ for _, row in df_filtered.iterrows():
         f"**Source :** {row['Source']}"
     )
 
-    if str(row["Date"]).strip():
+    date = str(
+        row.get(
+            "Date",
+            ""
+        )
+    ).strip()
+
+    if date:
 
         st.write(
-            f"**Date :** {row['Date']}"
+            f"**Date :** {date}"
         )
 
     lien = str(
@@ -165,7 +296,7 @@ for _, row in df_filtered.iterrows():
         with c2:
 
             st.link_button(
-                "📄 PDF",
+                "📄 Télécharger PDF",
                 pdf
             )
 

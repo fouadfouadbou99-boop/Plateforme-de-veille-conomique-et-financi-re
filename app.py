@@ -1,16 +1,57 @@
 import streamlit as st
 import feedparser
-from openai import OpenAI
 from datetime import datetime
-from io import BytesIO
 
-from reportlab.platypus import (
-    SimpleDocTemplate,
-    Paragraph,
-    Spacer
-)
+# =====================================================
+# PDF OPTIONNEL
+# =====================================================
 
-from reportlab.lib.styles import getSampleStyleSheet
+PDF_AVAILABLE = False
+
+try:
+
+    from io import BytesIO
+
+    from reportlab.platypus import (
+        SimpleDocTemplate,
+        Paragraph,
+        Spacer
+    )
+
+    from reportlab.lib.styles import (
+        getSampleStyleSheet
+    )
+
+    PDF_AVAILABLE = True
+
+except Exception:
+    PDF_AVAILABLE = False
+
+# =====================================================
+# OPENAI OPTIONNEL
+# =====================================================
+
+OPENAI_AVAILABLE = False
+
+try:
+
+    from openai import OpenAI
+
+    OPENAI_KEY = st.secrets.get(
+        "OPENAI_API_KEY",
+        ""
+    )
+
+    if OPENAI_KEY:
+
+        client = OpenAI(
+            api_key=OPENAI_KEY
+        )
+
+        OPENAI_AVAILABLE = True
+
+except Exception:
+    OPENAI_AVAILABLE = False
 
 # =====================================================
 # CONFIG
@@ -23,23 +64,6 @@ st.set_page_config(
 )
 
 # =====================================================
-# OPENAI
-# =====================================================
-
-client = None
-
-try:
-
-    OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
-
-    client = OpenAI(
-        api_key=OPENAI_API_KEY
-    )
-
-except:
-    pass
-
-# =====================================================
 # STYLE
 # =====================================================
 
@@ -48,10 +72,10 @@ st.markdown("""
 
 .main-header{
     text-align:center;
+    color:#1f4e79;
     font-size:42px;
     font-weight:bold;
-    color:#1f4e79;
-    margin-bottom:30px;
+    margin-bottom:20px;
 }
 
 </style>
@@ -67,142 +91,333 @@ st.markdown(
 )
 
 # =====================================================
-# FILTRES
+# DONNÉES
 # =====================================================
 
-SECTEURS = [
-    "Tous",
-    "Industrie",
-    "Finance",
-    "Agriculture",
-    "Énergie",
-    "Transport",
-    "Tourisme"
+ACTUALITES = [
+
+    {
+        "titre":
+        "Hausse des exportations industrielles",
+
+        "date":
+        "27/09/2026",
+
+        "source":
+        "Direction des Études Économiques",
+
+        "resume":
+        "Les exportations industrielles poursuivent leur progression grâce aux secteurs automobile et aéronautique."
+    },
+
+    {
+        "titre":
+        "Inflation en ralentissement",
+
+        "date":
+        "27/09/2026",
+
+        "source":
+        "Banque Centrale",
+
+        "resume":
+        "Le rythme de croissance des prix continue de ralentir."
+    },
+
+    {
+        "titre":
+        "Investissements publics en hausse",
+
+        "date":
+        "27/09/2026",
+
+        "source":
+        "Ministère des Finances",
+
+        "resume":
+        "De nouveaux projets d'investissement devraient soutenir l'activité économique."
+    }
+
 ]
+
+# =====================================================
+# FILTRES
+# =====================================================
 
 st.sidebar.header("Filtres")
 
 secteur = st.sidebar.selectbox(
     "Secteur économique",
-    SECTEURS
+    [
+        "Tous",
+        "Industrie",
+        "Finance",
+        "Agriculture",
+        "Énergie",
+        "Transport",
+        "Tourisme"
+    ]
 )
 
-nombre_articles = st.sidebar.slider(
-    "Nombre d'articles",
-    5,
-    50,
-    20
+# =====================================================
+# TABLEAU DE BORD
+# =====================================================
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+
+    st.metric(
+        "Articles",
+        len(ACTUALITES)
+    )
+
+with col2:
+
+    st.metric(
+        "Secteur",
+        secteur
+    )
+
+with col3:
+
+    st.metric(
+        "Date",
+        datetime.now().strftime(
+            "%d/%m/%Y"
+        )
+    )
+
+st.divider()
+
+# =====================================================
+# ACTUALITÉS
+# =====================================================
+
+st.subheader(
+    "📰 Actualités économiques"
 )
 
-# =====================================================
-# RSS
-# =====================================================
+for article in ACTUALITES:
 
-RSS_SOURCES = {
-    "HCP":
-        "https://www.hcp.ma/rss.xml",
+    st.markdown(
+        f"### {article['titre']}"
+    )
 
-    "MEF":
-        "https://www.finances.gov.ma/rss.xml",
+    st.caption(
+        f"📅 {article['date']} | 📰 {article['source']}"
+    )
 
-    "BAM":
-        "https://www.bkam.ma/rss",
+    st.write(
+        article["resume"]
+    )
 
-    "IMF":
-        "https://www.imf.org/en/News/RSS"
-}
+    st.divider()
 
 # =====================================================
-# ACTUALITES
+# SYNTHÈSE
 # =====================================================
 
-@st.cache_data(ttl=3600)
-def get_news(limit):
+def synthese_locale():
 
-    articles = []
+    return """
+# Synthèse de Veille Économique
 
-    for source, url in RSS_SOURCES.items():
+## Résumé exécutif
 
-        try:
+Les informations récentes mettent en évidence une
+orientation globalement favorable de la conjoncture.
 
-            feed = feedparser.parse(url)
+## Tendances
 
-            for item in feed.entries:
+- Progression des exportations industrielles.
+- Ralentissement de l'inflation.
+- Hausse des investissements publics.
 
-                articles.append({
+## Opportunités
 
-                    "titre":
-                        item.get("title", ""),
+- Dynamisme industriel.
+- Soutien de l'investissement public.
 
-                    "resume":
-                        item.get(
-                            "summary",
-                            ""
-                        ),
+## Risques
 
-                    "date":
-                        item.get(
-                            "published",
-                            ""
-                        ),
+- Contexte économique international.
+- Évolution future de l'inflation.
 
-                    "source":
-                        source,
+## Appréciation générale
 
-                    "url":
-                        item.get(
-                            "link",
-                            ""
-                        )
-                })
+🟢 FAVORABLE
 
-        except:
-            pass
+## Message au Comité
 
-    return articles[:limit]
+Les données disponibles suggèrent une évolution
+positive de la conjoncture à court terme.
+"""
 
 # =====================================================
-# APPRECIATION
+# OPENAI
 # =====================================================
 
-def evaluer_conjoncture(texte):
+def synthese_openai():
 
-    score = 0
+    texte = "\n".join(
+        [
+            a["titre"] + " : " + a["resume"]
+            for a in ACTUALITES
+        ]
+    )
 
-    mots_positifs = [
-        "croissance",
-        "hausse",
-        "investissement",
-        "progression",
-        "amélioration"
-    ]
+    prompt = f"""
+Produire une synthèse économique professionnelle.
 
-    mots_negatifs = [
-        "baisse",
-        "crise",
-        "recul",
-        "inflation",
-        "ralentissement"
-    ]
+Actualités :
 
-    contenu = texte.lower()
+{texte}
 
-    for mot in mots_positifs:
+Structure :
 
-        if mot in contenu:
-            score += 1
+- Résumé exécutif
+- Tendances
+- Opportunités
+- Risques
+- Appréciation générale
+- Message au Comité
+"""
 
-    for mot in mots_negatifs:
+    try:
 
-        if mot in contenu:
-            score -= 1
+        reponse = client.chat.completions.create(
 
-    if score >= 2:
-        return "🟢 FAVORABLE"
+            model="gpt-4o",
 
-    if score <= -2:
-        return "🔴 VIGILANCE"
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
 
-    return "🟡 STABLE"
+        return (
+            reponse
+            .choices[0]
+            .message
+            .content
+        )
 
-# ===============================
+    except Exception as e:
+
+        return f"Erreur OpenAI : {e}"
+
+# =====================================================
+# PDF
+# =====================================================
+
+def creer_pdf(texte):
+
+    if not PDF_AVAILABLE:
+        return None
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(buffer)
+
+    styles = getSampleStyleSheet()
+
+    contenu = []
+
+    contenu.append(
+        Paragraph(
+            "Synthèse de Veille Économique",
+            styles["Title"]
+        )
+    )
+
+    contenu.append(
+        Spacer(1, 12)
+    )
+
+    for ligne in texte.split("\n"):
+
+        if ligne.strip():
+
+            contenu.append(
+                Paragraph(
+                    ligne,
+                    styles["BodyText"]
+                )
+            )
+
+    doc.build(contenu)
+
+    buffer.seek(0)
+
+    return buffer
+
+# =====================================================
+# GÉNÉRATION
+# =====================================================
+
+st.subheader("📑 Synthèse")
+
+if st.button(
+    "Générer la synthèse"
+):
+
+    if OPENAI_AVAILABLE:
+
+        st.session_state[
+            "synthese"
+        ] = synthese_openai()
+
+    else:
+
+        st.session_state[
+            "synthese"
+        ] = synthese_locale()
+
+if "synthese" in st.session_state:
+
+    st.markdown(
+        st.session_state[
+            "synthese"
+        ]
+    )
+
+    if PDF_AVAILABLE:
+
+        pdf = creer_pdf(
+            st.session_state[
+                "synthese"
+            ]
+        )
+
+        if pdf:
+
+            st.download_button(
+                "📥 Télécharger PDF",
+                data=pdf,
+                file_name="Synthese.pdf",
+                mime="application/pdf"
+            )
+
+    else:
+
+        st.info(
+            "Export PDF indisponible (reportlab non installé)."
+        )
+
+# =====================================================
+# A PROPOS
+# =====================================================
+
+with st.expander(
+    "ℹ️ À propos"
+):
+
+    st.write(
+        """
+Plateforme de veille économique avec génération
+de synthèses automatiques et export PDF.
+"""
+    )

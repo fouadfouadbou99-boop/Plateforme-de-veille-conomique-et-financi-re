@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 
 from io import BytesIO
-
 from openai import OpenAI
+
 from docx import Document
 
 from reportlab.platypus import (
@@ -21,7 +21,7 @@ from connectors.aggregator import (
 )
 
 # =====================================================
-# CONFIG
+# CONFIGURATION
 # =====================================================
 
 st.set_page_config(
@@ -41,73 +41,131 @@ st.title(
 client = None
 
 try:
+    OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 
-    OPENAI_API_KEY = st.secrets[
-        "OPENAI_API_KEY"
-    ]
-
-    client = OpenAI(
-        api_key=OPENAI_API_KEY
-    )
+    if OPENAI_API_KEY:
+        client = OpenAI(
+            api_key=OPENAI_API_KEY
+        )
 
 except Exception:
-
     st.warning(
         "OpenAI non configuré. La synthèse locale sera utilisée."
     )
 
 # =====================================================
-# DONNÉES
+# CHARGEMENT DES DONNÉES
 # =====================================================
 
-try:
+@st.cache_data(ttl=1800)
+def charger_donnees():
+    return get_all_documents()
 
-    data = get_all_documents()
+try:
+    data = charger_donnees()
 
 except Exception as e:
-
     st.error(
-        f"Erreur : {e}"
+        f"Erreur de chargement : {e}"
     )
-
     st.stop()
 
 df = pd.DataFrame(data)
 
 if df.empty:
-
     st.warning(
         "Aucune donnée disponible."
     )
-
     st.stop()
+
+if "Titre" not in df.columns:
+    st.error(
+        "La colonne 'Titre' est absente."
+    )
+    st.stop()
+
+if "Source" not in df.columns:
+    df["Source"] = "Non renseignée"
+
+df["Titre"] = (
+    df["Titre"]
+    .fillna("")
+    .astype(str)
+)
+
+df["Source"] = (
+    df["Source"]
+    .fillna("Non renseignée")
+    .astype(str)
+)
 
 df = df.drop_duplicates(
     subset=["Titre"]
 )
 
 # =====================================================
+# FILTRAGE DES TITRES INUTILES
+# =====================================================
+
+MOTS_A_EXCLURE = [
+    "Tout sur",
+    "Vidéothèque",
+    "Galerie",
+    "Accueil",
+    "Contact",
+    "Classement",
+    "Nomenclature"
+]
+
+df = df[
+    ~df["Titre"].str.contains(
+        "|".join(MOTS_A_EXCLURE),
+        case=False,
+        na=False
+    )
+]
+
+if df.empty:
+    st.warning(
+        "Aucune publication exploitable après filtrage."
+    )
+    st.stop()
+
+# =====================================================
 # INDICATEURS
 # =====================================================
 
-st.metric(
-    "Publications analysées",
-    len(df)
-)
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric(
+        "Publications analysées",
+        len(df)
+    )
+
+with col2:
+    st.metric(
+        "Sources",
+        df["Source"].nunique()
+    )
+
+with col3:
+    st.metric(
+        "Titres uniques",
+        len(df)
+    )
 
 # =====================================================
-# TEXTE D'ANALYSE
+# TEXTE POUR IA
 # =====================================================
 
 texte = "\n\n".join(
-
     [
-        f"{row['Titre']}"
+        str(row["Titre"])
         for _, row in df
         .head(100)
         .iterrows()
     ]
-
 )
 
 # =====================================================
@@ -134,7 +192,6 @@ Structure obligatoire :
 # Risques et points de vigilance
 
 # Appréciation générale
-
 (Favorable, Stable ou Vigilance)
 
 # Message au Comité
@@ -144,7 +201,6 @@ Structure obligatoire :
 # Conclusion
 
 Style :
-
 - institutionnel ;
 - analytique ;
 - paragraphes développés ;
@@ -153,7 +209,7 @@ Style :
 """
 
 # =====================================================
-# SYNTHÈSE DE SECOURS
+# SYNTHÈSE LOCALE
 # =====================================================
 
 def synthese_secours():
@@ -162,19 +218,12 @@ def synthese_secours():
 
     nb_sources = df["Source"].nunique()
 
-    top_sources = (
-        df["Source"]
-        .value_counts()
-        .head(5)
-    )
-
     top_titles = (
         df["Titre"]
         .head(20)
         .tolist()
     )
 
-    # Identification de thèmes simples
     themes = {
         "Investissement": 0,
         "Croissance": 0,
@@ -183,7 +232,7 @@ def synthese_secours():
         "Finances publiques": 0
     }
 
-    for titre in df["Titre"].astype(str):
+    for titre in df["Titre"\]:
 
         t = titre.lower()
 
@@ -204,7 +253,7 @@ def synthese_secours():
             themes["Inflation"] += 1
 
         if (
-            "export" in t
+            "export" int
             or "import" in t
             or "commerce" in t
         ):
@@ -217,16 +266,14 @@ def synthese_secours():
         ):
             themes["Finances publiques"] += 1
 
-    principaux_themes = sorted(
-        themes.items(),
-        key=lambda x: x[1],
-        reverse=True
-    )
-
     themes_txt = "\n".join(
         [
-            f"- {nom} : {nb} publication(s)"
-            for nom, nb in principaux_themes
+            f"- {nom} : {valeur}"
+            for nom, valeur in sorted(
+                themes.items(),
+                key=lambda x: x[1],
+                reverse=True
+            )
         ]
     )
 
@@ -242,11 +289,8 @@ def synthese_secours():
 
 ## Résumé exécutif
 
-L'analyse porte sur **{nb_docs} publications** provenant de **{nb_sources} sources institutionnelles**.
-
-Les sujets les plus fréquemment abordés concernent les questions d'investissement, de croissance, de politiques publiques, de développement économique et de financement.
-
-L'activité documentaire observée témoigne d'une mobilisation soutenue des institutions nationales et internationales autour des enjeux économiques.
+L'analyse couvre {nb_docs} publications issues de
+{nb_sources} sources institutionnelles.
 
 ## Publications marquantes
 
@@ -254,77 +298,59 @@ L'activité documentaire observée témoigne d'une mobilisation soutenue des ins
 
 ## Tendances observées
 
-L'analyse des publications recueillies permet d'identifier les thèmes dominants suivants :
-
 {themes_txt}
 
-Les publications récentes mettent particulièrement l'accent sur les programmes d'investissement, les initiatives de développement économique, les projets structurants et les perspectives d'amélioration de la compétitivité.
-
-Les informations issues des différentes institutions convergent vers une poursuite des efforts de modernisation économique et de renforcement des capacités productives.
+Les publications montrent une activité soutenue autour
+des politiques économiques, de l'investissement et de
+la croissance.
 
 ## Opportunités
 
-Les publications recensées mettent en évidence plusieurs opportunités susceptibles de soutenir l'activité économique.
-
-Les investissements publics, les projets d'infrastructures et les programmes de développement constituent les principaux leviers identifiés.
-
-La diversité des initiatives observées traduit également l'existence d'un potentiel de croissance dans plusieurs secteurs économiques.
+Les projets d'investissement, de modernisation et de
+renforcement de la compétitivité constituent les
+principales opportunités observées.
 
 ## Risques et points de vigilance
 
-Les principales incertitudes relevées demeurent liées à l'environnement économique international, aux fluctuations des marchés mondiaux, aux risques financiers externes et à l'évolution de la conjoncture mondiale.
-
-Une surveillance particulière doit être maintenue sur les facteurs susceptibles d'affecter la croissance, l'investissement et la stabilité économique.
+Les principaux risques concernent la conjoncture
+internationale, l'évolution des marchés financiers,
+l'inflation et les tensions économiques externes.
 
 ## Appréciation générale
 
 🟡 STABLE AVEC ORIENTATION FAVORABLE
 
-Les facteurs favorables identifiés dans les publications apparaissent globalement plus nombreux que les éléments de risque recensés.
-
 ## Message au Comité
 
-Les informations analysées suggèrent une situation économique relativement maîtrisée. Les efforts d'investissement, les programmes publics et les différentes initiatives recensées contribuent au maintien d'une dynamique favorable.
-
-Il est recommandé de poursuivre le suivi régulier des indicateurs économiques et de renforcer l'analyse des risques externes susceptibles d'influencer les perspectives économiques.
+Les informations collectées suggèrent une dynamique
+économique globalement maîtrisée nécessitant un suivi
+régulier des risques externes.
 
 ## Recommandations
 
-- Consolider le suivi des programmes d'investissement.
-- Renforcer la veille sur les risques internationaux.
-- Poursuivre l'analyse sectorielle.
-- Approfondir l'exploitation des informations collectées.
+- Renforcer la veille économique.
+- Consolider le suivi des investissements.
+- Approfondir l'analyse sectorielle.
+- Maintenir un suivi des risques internationaux.
 
 ## Conclusion
 
-Les publications recensées témoignent d'une activité institutionnelle soutenue et d'une orientation globalement favorable des facteurs de développement économique. La poursuite de la veille permettra d'anticiper les évolutions futures et d'améliorer l'aide à la décision.
+Les publications analysées témoignent d'une activité
+institutionnelle soutenue et d'une orientation
+globalement favorable.
 """
-    MOTS_A_EXCLURE = [
-    "Tout sur",
-    "Vidéothèque",
-    "Galerie",
-    "Accueil",
-    "Contact",
-    "Classement",
-    "Nomenclature"
-]
 
-df = df[
-    ~df["Titre"].astype(str).str.contains(
-        "|".join(MOTS_A_EXCLURE),
-        case=False,
-        na=False
-    )
-]
 # =====================================================
-# IA
+# IA OPENAI
 # =====================================================
 
 def generer_synthese():
 
     if client is None:
-
-        return synthese_secours()
+        return (
+            "⚠️ OpenAI indisponible.\n\n"
+            + synthese_secours()
+        )
 
     try:
 
@@ -336,17 +362,23 @@ def generer_synthese():
                     "content": PROMPT
                 }
             ],
-            temperature=0.2
+            temperature=0.2,
+            max_tokens=2500
         )
 
-        return response.choices[0].message.content
+        return response.choices[
+            0
+        ].message.content
 
-    except Exception:
+    except Exception as e:
 
-        return synthese_secours()
+        return (
+            f"⚠️ Erreur OpenAI : {e}\n\n"
+            + synthese_secours()
+        )
 
 # =====================================================
-# PDF
+# EXPORT PDF
 # =====================================================
 
 def creer_pdf(texte):
@@ -359,18 +391,13 @@ def creer_pdf(texte):
 
     styles = getSampleStyleSheet()
 
-    contenu = []
-
-    contenu.append(
+    contenu = [
         Paragraph(
             "Synthèse économique",
             styles["Title"]
-        )
-    )
-
-    contenu.append(
+        ),
         Spacer(1, 12)
-    )
+    ]
 
     for ligne in texte.split("\n"):
 
@@ -378,7 +405,7 @@ def creer_pdf(texte):
 
             contenu.append(
                 Paragraph(
-                    ligne,
+                    ligne.replace("&", "&amp;"),
                     styles["BodyText"]
                 )
             )
@@ -390,7 +417,7 @@ def creer_pdf(texte):
     return buffer
 
 # =====================================================
-# WORD
+# EXPORT WORD
 # =====================================================
 
 def creer_word(texte):
@@ -415,11 +442,12 @@ def creer_word(texte):
     return buffer
 
 # =====================================================
-# GENERATION
+# BOUTON DE GÉNÉRATION
 # =====================================================
 
 if st.button(
-    "🚀 Générer la synthèse IA"
+    "🚀 Générer la synthèse IA",
+    use_container_width=True
 ):
 
     with st.spinner(
@@ -440,9 +468,7 @@ if "synthese" in st.session_state:
         "synthese"
     ]
 
-    st.markdown(
-        synthese
-    )
+    st.markdown(synthese)
 
     col1, col2 = st.columns(2)
 

@@ -189,11 +189,12 @@ Style :
 def synthese_secours():
 
     nb_docs = len(df)
+
     nb_sources = df["Source"].nunique()
 
     top_titles = (
         df["Titre"]
-        .head(10)
+        .head(20)
         .tolist()
     )
 
@@ -202,7 +203,7 @@ def synthese_secours():
         "Croissance": 0,
         "Inflation": 0,
         "Commerce": 0,
-        "Finances publiques": 0,
+        "Finances publiques": 0
     }
 
     for titre in df["Titre"\]:
@@ -241,8 +242,8 @@ def synthese_secours():
 
     themes_txt = "\n".join(
         [
-            f"- {k} : {v}"
-            for k, v in sorted(
+            f"- {nom} : {valeur}"
+            for nom, valeur in sorted(
                 themes.items(),
                 key=lambda x: x[1],
                 reverse=True
@@ -251,7 +252,10 @@ def synthese_secours():
     )
 
     publications_txt = "\n".join(
-        [f"- {t}" for t in top_titles]
+        [
+            f"- {titre}"
+            for titre in top_titles[:10]
+        ]
     )
 
     return f"""
@@ -259,8 +263,8 @@ def synthese_secours():
 
 ## Résumé exécutif
 
-L'analyse couvre {nb_docs} publications
-issues de {nb_sources} sources institutionnelles.
+L'analyse couvre {nb_docs} publications issues de
+{nb_sources} sources institutionnelles.
 
 ## Publications marquantes
 
@@ -270,47 +274,44 @@ issues de {nb_sources} sources institutionnelles.
 
 {themes_txt}
 
-Les publications analysées montrent
-une activité soutenue autour des enjeux
-de croissance, d'investissement,
-de financement et de compétitivité.
+Les publications montrent une activité soutenue autour
+des politiques économiques, de l'investissement et de la croissance.
 
 ## Opportunités
 
-Les programmes d'investissement
-et les projets structurants constituent
-les principales opportunités observées.
+Les projets d'investissement, de modernisation et de
+renforcement de la compétitivité constituent les
+principales opportunités observées.
 
 ## Risques et points de vigilance
 
-La conjoncture mondiale,
-les tensions inflationnistes
-et l'environnement financier international
-appellent une vigilance continue.
+Les principaux risquesconcernent la conjoncture
+internationale, l'évolution des marchés financiers,
+l'inflation et les tensions économiques externes.
 
 ## Appréciation générale
+
 🟡 STABLE AVEC ORIENTATION FAVORABLE
 
 ## Message au Comité
 
-La dynamique globale observée reste positive
-tout en nécessitant un suivi régulier
-des risques externes.
+Les informations collectées suggèrent une dynamique
+économique globalement maîtrisée nécessitant un suivi
+régulier des risques externes.
 
 ## Recommandations
 
 - Renforcer la veille économique.
-- Suivre les investissements stratégiques.
-- Consolider l'analyse sectorielle.
-- Surveiller les risques internationaux.
+- Consolider le suivi des investissements.
+- Approfondir l'analyse sectorielle.
+- Maintenir un suivi des risques internationaux.
 
 ## Conclusion
 
-Les publications analysées traduisent
-une dynamique institutionnelle soutenue
-et une orientation globalement favorable.
+Les publications analysées témoignent d'une activité
+institutionnelle soutenue et d'une orientation
+globalement favorable.
 """
-
 # =====================================================
 # IA OPENAI
 # =====================================================

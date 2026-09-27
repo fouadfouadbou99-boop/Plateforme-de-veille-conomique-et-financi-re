@@ -209,7 +209,7 @@ def synthese_secours():
         "Finances publiques": 0
     }
 
-    for titre in df["Titre"\]:
+    for titre in df["Titre"]:
 
         t = str(titre).lower()
 

@@ -401,5 +401,5 @@ with st.expander(
         """
 Plateforme de veille économique avec génération
 de synthèses automatiques et export PDF.
-"""
+
     )

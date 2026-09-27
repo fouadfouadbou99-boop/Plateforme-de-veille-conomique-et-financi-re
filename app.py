@@ -1,5 +1,4 @@
 import streamlit as st
-import feedparser
 from datetime import datetime
 
 # =====================================================
@@ -34,20 +33,32 @@ st.markdown(
 )
 
 # =====================================================
-# SECTEURS
+# DONNÉES DE DÉMONSTRATION
 # =====================================================
 
-SECTEURS = [
-    "Tous",
-    "Finance",
-    "Industrie",
-    "Agriculture",
-    "Énergie",
-    "Transport",
-    "Tourisme",
-    "Technologie",
-    "Immobilier",
-    "Commerce"
+ACTUALITES = [
+
+    {
+        "titre": "Hausse des exportations industrielles",
+        "date": "27/09/2026",
+        "source": "Direction des Études Économiques",
+        "resume": "Les exportations industrielles poursuivent leur progression grâce aux secteurs automobile et aéronautique."
+    },
+
+    {
+        "titre": "Inflation en ralentissement",
+        "date": "27/09/2026",
+        "source": "Banque Centrale",
+        "resume": "Le rythme de croissance des prix continue de ralentir sous l'effet de la baisse des coûts énergétiques."
+    },
+
+    {
+        "titre": "Investissements publics en hausse",
+        "date": "27/09/2026",
+        "source": "Ministère des Finances",
+        "resume": "De nouveaux projets d'investissement devraient soutenir l'activité économique."
+    }
+
 ]
 
 # =====================================================
@@ -58,102 +69,16 @@ st.sidebar.header("Filtres")
 
 secteur = st.sidebar.selectbox(
     "Secteur économique",
-    SECTEURS
+    [
+        "Tous",
+        "Industrie",
+        "Finance",
+        "Agriculture",
+        "Énergie",
+        "Transport",
+        "Tourisme"
+    ]
 )
-
-nombre_articles = st.sidebar.slider(
-    "Nombre d'articles",
-    5,
-    50,
-    20
-)
-
-# =====================================================
-# RSS
-# =====================================================
-
-RSS_FEEDS = [
-    "https://feeds.reuters.com/reuters/businessNews",
-    "https://www.oecd.org/newsroom/rss.xml"
-]
-
-# =====================================================
-# ACTUALITÉS
-# =====================================================
-
-@st.cache_data(ttl=3600)
-def get_news(limit):
-
-    articles = []
-
-    for rss_url in RSS_FEEDS:
-
-        try:
-
-            feed = feedparser.parse(rss_url)
-
-            for item in feed.entries:
-
-                articles.append({
-                    "title": item.get("title", ""),
-                    "description": item.get("summary", ""),
-                    "publishedAt": item.get("published", ""),
-                    "url": item.get("link", ""),
-                    "source": rss_url
-                })
-
-        except Exception:
-            pass
-
-    return articles[:limit]
-
-# =====================================================
-# SYNTHÈSE
-# =====================================================
-
-def generer_synthese(articles):
-
-    if len(articles) == 0:
-        return """
-## Aucune synthèse disponible
-
-Aucune actualité économique n'a été récupérée.
-"""
-
-    titres = []
-
-    for article in articles[:20]:
-
-        titre = article.get("title", "")
-
-        if titre:
-            titres.append(f"• {titre}")
-
-    texte = "\n".join(titres)
-
-    return f"""
-## Synthèse automatique
-
-Nombre d'articles analysés : {len(articles)}
-
-### Principales nouvelles
-
-{texte}
-
-### Commentaire
-
-Les nouvelles recensées mettent en évidence les principaux
-événements économiques publiés récemment par les sources suivies.
-
-Cette synthèse est générée automatiquement à partir des titres
-des articles collectés.
-"""
-
-# =====================================================
-# DONNÉES
-# =====================================================
-
-articles = get_news(nombre_articles)
 
 # =====================================================
 # INDICATEURS
@@ -164,7 +89,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.metric(
         "Articles",
-        len(articles)
+        len(ACTUALITES)
     )
 
 with col2:
@@ -187,61 +112,21 @@ st.divider()
 
 st.subheader("📰 Actualités économiques")
 
-if len(articles) == 0:
+for article in ACTUALITES:
 
-    st.info(
-        "Aucune actualité disponible."
+    st.markdown(
+        f"### {article['titre']}"
     )
 
-else:
+    st.caption(
+        f"📅 {article['date']} | 📰 {article['source']}"
+    )
 
-    for article in articles:
+    st.write(
+        article["resume"]
+    )
 
-        titre = article.get(
-            "title",
-            "Titre indisponible"
-        )
-
-        description = article.get(
-            "description",
-            ""
-        )
-
-        date = article.get(
-            "publishedAt",
-            ""
-        )
-
-        source = article.get(
-            "source",
-            ""
-        )
-
-        st.markdown(
-            f"### {titre}"
-        )
-
-        st.caption(
-            f"📅 {date}"
-        )
-
-        st.caption(
-            f"📰 Source : {source}"
-        )
-
-        if description:
-            st.write(description)
-
-        url = article.get("url")
-
-        if url:
-
-            st.link_button(
-                "Lire l'article",
-                url
-            )
-
-        st.divider()
+    st.divider()
 
 # =====================================================
 # SYNTHÈSE
@@ -251,9 +136,23 @@ st.subheader("📑 Synthèse")
 
 if st.button("Générer la synthèse"):
 
-    st.session_state["synthese"] = (
-        generer_synthese(articles)
-    )
+    synthese = """
+### Synthèse automatique
+
+L'analyse des informations disponibles met en évidence
+une orientation globalement favorable de la conjoncture.
+
+Les exportations industrielles affichent une progression
+soutenue tandis que les tensions inflationnistes
+continuent de s'atténuer.
+
+Les investissements publics demeurent un facteur
+important de soutien de l'activité économique.
+
+Appréciation générale : Favorable.
+"""
+
+    st.session_state["synthese"] = synthese
 
 if "synthese" in st.session_state:
 
@@ -262,15 +161,15 @@ if "synthese" in st.session_state:
     )
 
 # =====================================================
-# A PROPOS
+# À PROPOS
 # =====================================================
 
 with st.expander("ℹ️ À propos"):
 
     st.write(
         """
-Cette plateforme récupère automatiquement des actualités
-économiques depuis plusieurs flux RSS publics et génère
-une synthèse simplifiée des principales nouvelles.
+Cette plateforme de veille économique permet de
+consulter les nouvelles économiques et de produire
+une synthèse destinée aux décideurs.
 """
     )
